@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AeroPad</string>
+    <!-- V2 MATRIX 8 — launcher shortcuts -->
+    <string name="shortcut_keyboard">Keyboard</string>
+    <string name="shortcut_mouse">Trackpad</string>
+    <string name="shortcut_gamepad">Gamepad</string>
+    <string name="shortcut_media">Media</string>
+</resources>
