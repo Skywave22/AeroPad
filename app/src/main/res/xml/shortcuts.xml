@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- V2 MATRIX 8 — static launcher shortcuts (long-press the app icon).
+     Each fires MainActivity with a ShortcutActions action string; the
+     activity maps it to a start route (pure, unit-tested mapping). -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="keyboard"
+        android:enabled="true"
+        android:icon="@drawable/ic_notification"
+        android:shortcutShortLabel="@string/shortcut_keyboard">
+        <intent
+            android:action="com.bluepilot.remote.OPEN_KEYBOARD"
+            android:targetPackage="com.bluepilot.remote"
+            android:targetClass="com.bluepilot.remote.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="mouse"
+        android:enabled="true"
+        android:icon="@drawable/ic_notification"
+        android:shortcutShortLabel="@string/shortcut_mouse">
+        <intent
+            android:action="com.bluepilot.remote.OPEN_MOUSE"
+            android:targetPackage="com.bluepilot.remote"
+            android:targetClass="com.bluepilot.remote.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="gamepad"
+        android:enabled="true"
+        android:icon="@drawable/ic_notification"
+        android:shortcutShortLabel="@string/shortcut_gamepad">
+        <intent
+            android:action="com.bluepilot.remote.OPEN_GAMEPAD"
+            android:targetPackage="com.bluepilot.remote"
+            android:targetClass="com.bluepilot.remote.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="media"
+        android:enabled="true"
+        android:icon="@drawable/ic_notification"
+        android:shortcutShortLabel="@string/shortcut_media">
+        <intent
+            android:action="com.bluepilot.remote.OPEN_MEDIA"
+            android:targetPackage="com.bluepilot.remote"
+            android:targetClass="com.bluepilot.remote.MainActivity" />
+    </shortcut>
+</shortcuts>
