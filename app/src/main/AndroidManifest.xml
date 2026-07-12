@@ -8,6 +8,10 @@
                                    (SCAN declared neverForLocation). -->
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <!-- Lint CoarseFineLocation: FINE requires COARSE alongside it (Android 12+
+         lets users grant only coarse). Both capped at API 30 — from 31 up,
+         BLUETOOTH_SCAN with neverForLocation replaces location entirely. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
