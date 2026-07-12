@@ -1,6 +1,6 @@
 # AeroPad CI — V2 PART A: cached, size-tracked, lint-gated.
-# NOTE: copy this file's contents into your repo's existing workflow
-# (main.yml) — GitHub uses whatever lives in .github/workflows/.
+# PASTE THIS ENTIRE FILE into .github/workflows/main.yml on GitHub
+# (web UI: open main.yml → pencil icon → select all → paste → commit).
 name: Build AeroPad
 
 on:
@@ -22,6 +22,11 @@ jobs:
       # V2 A6 — Gradle build + dependency caching (big CI speedup).
       - name: Gradle (with caching)
         uses: gradle/actions/setup-gradle@v3
+
+      # FIX: GitHub's web-UI upload strips the executable bit from gradlew
+      # ("Permission denied", exit 126). Restore it before any gradle call.
+      - name: Make gradlew executable
+        run: chmod +x gradlew
 
       - name: Unit tests
         run: ./gradlew testDebugUnitTest --stacktrace
