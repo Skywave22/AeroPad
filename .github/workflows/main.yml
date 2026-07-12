@@ -10,6 +10,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # FIX 2: repo gradle.properties uses low-memory JVM args (853MB heap /
+    # 320MB metaspace — sandbox-tuned). Lint runs out of Metaspace with
+    # those. GitHub runners have 7GB, so override here (env var beats
+    # gradle.properties). Local builds keep the low-memory settings.
+    env:
+      GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8"
     steps:
       - uses: actions/checkout@v4
 
