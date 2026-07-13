@@ -5,6 +5,7 @@ import com.bluepilot.remote.model.HidAction
 import com.bluepilot.remote.model.HidConnectionState
 import com.bluepilot.remote.model.RemoteDevice
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 /**
@@ -15,11 +16,60 @@ import javax.inject.Inject
  * can inject fakes trivially.
  */
 
-/** Observe the connection state machine. */
+/**
+ * WIFI FIX #2 — merged connection truth (singleton: ONE combine collector
+ * for the whole app, no per-ViewModel leaks).
+ *
+ * Every control screen's "connected" banner previously watched ONLY the
+ * Bluetooth engine, so a live WiFi session still showed "Not connected"
+ * everywhere — the #1 cause of "WiFi not working" reports. Now a WiFi
+ * session (while transport mode is WIFI) surfaces as Connected app-wide.
+ */
+/** Seam for tests: anything exposing merged connection state. */
+interface ConnectionStateSource {
+    val state: StateFlow<HidConnectionState>
+}
+
+@javax.inject.Singleton
+class ConnectionStateHub @Inject constructor(
+    controller: HidController,
+    wifi: com.bluepilot.remote.wifi.WifiEngine,
+    transport: com.bluepilot.remote.wifi.TransportManager
+) : ConnectionStateSource {
+    private val scope = kotlinx.coroutines.CoroutineScope(
+        kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Default
+    )
+
+    override val state: StateFlow<HidConnectionState> =
+        kotlinx.coroutines.flow.combine(
+            controller.state, wifi.state, transport.mode
+        ) { bt, wf, mode ->
+            if (mode == com.bluepilot.remote.wifi.TransportManager.Mode.WIFI &&
+                wf is com.bluepilot.remote.wifi.WifiEngine.WifiState.Connected
+            ) {
+                HidConnectionState.Connected(
+                    RemoteDevice(address = wf.host, name = wf.name, isPaired = true)
+                )
+            } else bt
+        }.stateIn(
+            scope,
+            kotlinx.coroutines.flow.SharingStarted.Eagerly,
+            controller.state.value
+        )
+}
+
+/** Observe the (merged BT+WiFi) connection state machine. */
 class ObserveConnectionUseCase @Inject constructor(
-    private val controller: HidController
+    private val source: ConnectionStateSource
 ) {
-    operator fun invoke(): StateFlow<HidConnectionState> = controller.state
+    /** Test convenience: plain BT-only view over a bare controller. */
+    constructor(controller: HidController) : this(
+        object : ConnectionStateSource {
+            override val state: StateFlow<HidConnectionState> = controller.state
+        }
+    )
+
+    operator fun invoke(): StateFlow<HidConnectionState> = source.state
 }
 
 /** Boot the HID engine (registers the combined HID app). */

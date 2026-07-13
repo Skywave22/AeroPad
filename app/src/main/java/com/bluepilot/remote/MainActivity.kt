@@ -42,9 +42,19 @@ class MainActivity : ComponentActivity() {
     @javax.inject.Inject
     lateinit var sensors: com.bluepilot.remote.sensors.MotionSensorSource
 
+    /** V2 M4 b2 — opt-in reconnect to the last host on launch. */
+    @javax.inject.Inject
+    lateinit var autoReconnector: com.bluepilot.remote.domain.AutoReconnector
+
+    @javax.inject.Inject
+    lateinit var hostProfileStore: com.bluepilot.remote.data.hosts.HostProfileStore
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // V2 M4 b2 — one-shot, fully gated inside (opt-in setting, saved
+        // PIN required for WiFi, silent on failure).
+        autoReconnector.maybeReconnect(pinFor = { hostProfileStore.pinFor(it) })
         setContent {
             val settingsViewModel: SettingsViewModel = hiltViewModel()
             val app by settingsViewModel.app.collectAsState()

@@ -35,6 +35,13 @@ abstract class AppModule {
         impl: com.bluepilot.remote.data.hosts.HostProfileStore
     ): com.bluepilot.remote.data.hosts.HostProfiles
 
+    // WIFI FIX #2 — merged BT+WiFi connection truth for every screen.
+    @Binds
+    @Singleton
+    abstract fun bindConnectionStateSource(
+        impl: com.bluepilot.remote.domain.usecase.ConnectionStateHub
+    ): com.bluepilot.remote.domain.usecase.ConnectionStateSource
+
     @Binds
     @Singleton
     abstract fun bindNearbyScanner(impl: BluetoothDeviceScanner): NearbyScanner

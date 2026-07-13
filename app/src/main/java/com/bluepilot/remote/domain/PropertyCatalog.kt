@@ -67,10 +67,10 @@ object PropertyCatalog {
      *  per step slot (rule 6). */
     const val MACRO_STEP_PROPS = 3
 
-    /** AppSettings 24 + MouseSettings 6 + KeyboardSettings 1
-     *  + GamepadSettings 4 = 35 global toggles/values
-     *  (spokenAlerts added in the M5 b2 batch). */
-    const val SETTINGS_PROPS = 35
+    /** AppSettings 25 + MouseSettings 6 + KeyboardSettings 1
+     *  + GamepadSettings 4 = 36 global toggles/values
+     *  (autoReconnectLast added in the M4 b2 batch). */
+    const val SETTINGS_PROPS = 36
 
     /** Keys on the real default board + favorites cap + FN overlay cap. */
     fun keyboardKeyInstances(): Int {

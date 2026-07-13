@@ -17,7 +17,7 @@ enum class HapticIntensity { LIGHT, MEDIUM, STRONG }
 data class AppSettings(
     val theme: ThemeMode = ThemeMode.SYSTEM,
     /** Active visual theme id from BuiltInThemes (Section 1 theme engine). */
-    val themeId: String = "aero_glass",
+    val themeId: String = "obsidian_3d",
     val fullscreenMode: Boolean = false,
     val keepScreenOn: Boolean = true,
     val touchVibrations: Boolean = true,
@@ -63,7 +63,10 @@ data class AppSettings(
     val lightAutoTheme: Boolean = false,
     /** V2 MATRIX 5 b2 — speak connect/disconnect events through the active
      *  screen reader (announceForAccessibility — a no-op without one). */
-    val spokenAlerts: Boolean = true
+    val spokenAlerts: Boolean = true,
+    /** V2 M4 b2 — reconnect to the most recent saved host on app start
+     *  (opt-in: silent auto-connections can surprise users). */
+    val autoReconnectLast: Boolean = false
 )
 
 /** Mouse/trackpad tuning. All percentages 0..100. */

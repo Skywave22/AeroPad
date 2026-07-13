@@ -70,6 +70,7 @@ class DataStoreSettings @Inject constructor(
         val AUTOMATION_API = booleanPreferencesKey("automation_api")   // V2 M8 b2
         val LIGHT_AUTO_THEME = booleanPreferencesKey("light_auto_theme")   // V2 M3
         val SPOKEN_ALERTS = booleanPreferencesKey("spoken_alerts")   // V2 M5 b2
+        val AUTO_RECONNECT_LAST = booleanPreferencesKey("auto_reconnect_last")   // V2 M4 b2
         // Mouse
         val M_SENSITIVITY = intPreferencesKey("m_sensitivity")
         val M_SCROLL = intPreferencesKey("m_scroll")
@@ -104,7 +105,7 @@ class DataStoreSettings @Inject constructor(
     override val appSettings: Flow<AppSettings> = safePrefs.map { p ->
         AppSettings(
             theme = p[Keys.THEME].toEnum(ThemeMode.SYSTEM),
-            themeId = p[Keys.THEME_ID] ?: "aero_glass",
+            themeId = p[Keys.THEME_ID] ?: "obsidian_3d",
             fullscreenMode = p[Keys.FULLSCREEN] ?: false,
             keepScreenOn = p[Keys.KEEP_SCREEN_ON] ?: true,
             touchVibrations = p[Keys.VIBRATIONS] ?: true,
@@ -126,7 +127,8 @@ class DataStoreSettings @Inject constructor(
             fpsOverlay = p[Keys.FPS_OVERLAY] ?: false,
             automationApi = p[Keys.AUTOMATION_API] ?: false,
             lightAutoTheme = p[Keys.LIGHT_AUTO_THEME] ?: false,
-            spokenAlerts = p[Keys.SPOKEN_ALERTS] ?: true
+            spokenAlerts = p[Keys.SPOKEN_ALERTS] ?: true,
+            autoReconnectLast = p[Keys.AUTO_RECONNECT_LAST] ?: false
         )
     }
 
@@ -184,6 +186,7 @@ class DataStoreSettings @Inject constructor(
             p[Keys.AUTOMATION_API] = settings.automationApi
             p[Keys.LIGHT_AUTO_THEME] = settings.lightAutoTheme
             p[Keys.SPOKEN_ALERTS] = settings.spokenAlerts
+            p[Keys.AUTO_RECONNECT_LAST] = settings.autoReconnectLast
         }
     }
 
