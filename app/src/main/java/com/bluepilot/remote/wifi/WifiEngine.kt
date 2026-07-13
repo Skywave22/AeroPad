@@ -40,7 +40,13 @@ import javax.inject.Singleton
 class WifiEngine @Inject constructor(
     @ApplicationContext private val context: Context,
     // AEROPAD v1.0 #41 — real session history log.
-    private val history: com.bluepilot.remote.data.history.ConnectionHistoryStore
+    private val history: com.bluepilot.remote.data.history.ConnectionHistoryStore,
+    // WIFI FIX #1 — auto-switch the transport on connect/disconnect. The
+    // old flow required users to ALSO tap the "WiFi LAN" chip after the
+    // PIN handshake; forgetting it sent input to the dead BT path =
+    // "WiFi not working". Now: handshake OK → mode=WIFI automatically;
+    // disconnect/drop → back to BLUETOOTH.
+    private val transport: TransportManager
 ) {
     sealed class WifiState {
         data object Idle : WifiState()
@@ -178,6 +184,8 @@ class WifiEngine @Inject constructor(
                 _counters.value = 0L to 0L
                 _state.value = WifiState.Connected(host, ok.deviceName ?: host)
                 history.onConnected("WIFI", ok.deviceName ?: host)   // #41
+                // WIFI FIX #1 — input now flows over WiFi immediately.
+                transport.setMode(TransportManager.Mode.WIFI)
                 startPing(r)
             }.onFailure {
                 Timber.w(it, "wifi connect failed")
@@ -211,6 +219,8 @@ class WifiEngine @Inject constructor(
                 closeQuietly()
                 history.onDisconnected("WIFI", "link dropped")   // #41
                 _state.value = WifiState.Error("Connection lost.")
+                // WIFI FIX #1 — dead link must not keep eating input.
+                transport.setMode(TransportManager.Mode.BLUETOOTH)
             }
         }
         pingJob?.cancel()
@@ -223,8 +233,11 @@ class WifiEngine @Inject constructor(
     }
 
     fun disconnect() {
-        if (_state.value is WifiState.Connected)
+        if (_state.value is WifiState.Connected) {
             history.onDisconnected("WIFI", "user disconnect")   // #41
+            // WIFI FIX #1 — release the routing back to Bluetooth.
+            transport.setMode(TransportManager.Mode.BLUETOOTH)
+        }
         pingJob?.cancel(); readJob?.cancel()
         closeQuietly()
         _latencyMs.value = null

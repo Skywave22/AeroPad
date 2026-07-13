@@ -8,8 +8,63 @@ import androidx.compose.ui.graphics.Color
  */
 object BuiltInThemes {
 
+    /**
+     * STITCH v3 DESIGN A — "Obsidian 3D" (the new default).
+     * Values extracted from the real generated design HTMLs:
+     * pure black #050505 backdrop, floating #131313 obsidian slabs with
+     * #2a2a30 hairlines, glowing cyan #2FD9F4 accent with violet support.
+     * Premium 3D: strong glow, deep radius, edge light on card tops.
+     */
+    val OBSIDIAN_3D = AppThemeSpec(
+        id = "obsidian_3d",
+        name = "Obsidian 3D",
+        isDark = true,
+        primary = Color(0xFF2FD9F4), onPrimary = Color(0xFF00363E),
+        secondary = Color(0xFF7C6CF5),
+        background = Color(0xFF050505), onBackground = Color(0xFFE5E2E1),
+        surface = Color(0xFF131313), onSurface = Color(0xFFE5E2E1),
+        surfaceVariant = Color(0xFF1C1C20), onSurfaceVariant = Color(0xFF9BA3AE),
+        outline = Color(0xFF2A2A30),
+        backgroundOrbs = listOf(
+            // Single restrained cyan halo behind the hero zone — depth fog,
+            // not decoration (matches the generated screens).
+            ThemeOrb(Color(0xFF2FD9F4), 0.50f, 0.14f, 0.44f, 0.10f),
+            ThemeOrb(Color(0xFF7C6CF5), 0.85f, 0.92f, 0.34f, 0.07f)
+        ),
+        cornerRadius = 24, surfaceAlpha = 0.94f, edgeGlow = true, elevation = 4,
+        glowColor = Color(0xFF2FD9F4),
+        connected = Color(0xFF66F796)
+    )
+
+    /**
+     * STITCH v3 DESIGN B — "Glass Light" (Obsidian's light counterpart).
+     * Extracted values: ivory-blue #F9F9FF field, pure white glass panes,
+     * #D8E3FB specular borders, sapphire #2563EB with cyan support,
+     * slate ink #111C2D text. visionOS liquid-glass feel.
+     */
+    val STITCH_GLASS_LIGHT = AppThemeSpec(
+        id = "stitch_glass_light",
+        name = "Glass Light",
+        isDark = false,
+        primary = Color(0xFF2563EB), onPrimary = Color.White,
+        secondary = Color(0xFF06B6D4),
+        background = Color(0xFFF9F9FF), onBackground = Color(0xFF111C2D),
+        surface = Color(0xFFFFFFFF), onSurface = Color(0xFF111C2D),
+        surfaceVariant = Color(0xFFECF1FF), onSurfaceVariant = Color(0xFF52565A),
+        outline = Color(0xFFD8E3FB),
+        backgroundOrbs = listOf(
+            // Soft caustic light pools — barely-there blue glass shimmer.
+            ThemeOrb(Color(0xFFB4C5FF), 0.20f, 0.10f, 0.50f, 0.30f),
+            ThemeOrb(Color(0xFF57DFFE), 0.85f, 0.30f, 0.40f, 0.20f),
+            ThemeOrb(Color(0xFFDEE8FF), 0.50f, 0.95f, 0.55f, 0.45f)
+        ),
+        cornerRadius = 24, surfaceAlpha = 0.88f, edgeGlow = true, elevation = 3,
+        glowColor = Color(0xFF2563EB),
+        connected = Color(0xFF16A34A)
+    )
+
     /** Classic BluePilot look (the pre-update default). */
-    /** STITCH REDESIGN — "AeroPad Liquid Glass": the new default look.
+    /** STITCH REDESIGN — "AeroPad Liquid Glass": the earlier default look.
      *  Deep navy ink #0B1220, teal/cyan accent, frosted glass surfaces,
      *  soft teal+purple orbs — matches the generated design system. */
     val AERO_GLASS = AppThemeSpec(
@@ -354,6 +409,7 @@ object BuiltInThemes {
 
     /** All themes, gallery order. */
     val ALL: List<AppThemeSpec> = listOf(
+        OBSIDIAN_3D, STITCH_GLASS_LIGHT,
         AERO_GLASS,
         PILOT_DARK, PILOT_GLOW,
         LIQUID_GLASS, LIQUID_GLASS_LIGHT,
@@ -375,6 +431,9 @@ object BuiltInThemes {
      * Glass, Cockpit HUD <-> Day Flight, ...).
      */
     fun counterpart(spec: AppThemeSpec): AppThemeSpec = when (spec.id) {
+        // STITCH v3 pair — Obsidian 3D <-> Glass Light are one family.
+        "obsidian_3d" -> STITCH_GLASS_LIGHT
+        "stitch_glass_light" -> OBSIDIAN_3D
         "aero_glass" -> MINIMAL_LIGHT
         "pilot_dark", "pilot_glow", "oled_black", "dark_neon" -> MINIMAL_LIGHT
         "liquid_glass" -> LIQUID_GLASS_LIGHT

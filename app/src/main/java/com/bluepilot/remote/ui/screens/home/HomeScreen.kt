@@ -1,100 +1,111 @@
 package com.bluepilot.remote.ui.screens.home
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.HelpOutline
 import androidx.compose.material.icons.rounded.Bluetooth
+import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.Computer
 import androidx.compose.material.icons.rounded.Dashboard
 import androidx.compose.material.icons.rounded.Gamepad
-import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.Keyboard
-import androidx.compose.material.icons.rounded.Mouse
 import androidx.compose.material.icons.rounded.MonitorHeart
-import androidx.compose.material.icons.rounded.Wifi
+import androidx.compose.material.icons.rounded.Mouse
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Pin
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.SportsEsports
 import androidx.compose.material.icons.rounded.Slideshow
+import androidx.compose.material.icons.rounded.Wifi
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.bluepilot.remote.ui.components.toComposeColor
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.bluepilot.remote.model.HidConnectionState
 import com.bluepilot.remote.ui.components.ConnectionStatusCard
-import com.bluepilot.remote.ui.components.GlassCard
 import com.bluepilot.remote.ui.components.GelIcon
+import com.bluepilot.remote.ui.components.GlassCard
 import com.bluepilot.remote.ui.navigation.Routes
+import com.bluepilot.remote.ui.components.toComposeColor
 import com.bluepilot.remote.ui.theme.LocalAppTheme
 import com.bluepilot.remote.viewmodel.ConnectionViewModel
 
 /**
- * Home: live connection status + navigation grid.
+ * UI/UX v2.1 — HOME REDESIGN: 3-tier visual hierarchy.
  *
- * The Connect tile routes through the permission screen when permissions
- * are missing; control tiles activate as their modules are built.
+ * The old Home was a flat 12-tile grid: "Mouse" carried the same visual
+ * weight as "Help". Redesigned around FREQUENCY OF USE:
+ *
+ *  Tier 1  HERO      — live status + the 3 daily drivers (Mouse /
+ *                      Keyboard / Gamepad) as tall feature cards.
+ *  Tier 2  CONTROLS  — the remaining control surfaces, 2-col grid.
+ *  Tier 3  SETUP     — Connect / WiFi / Health / Themes / Settings /
+ *                      Help as compact list rows (half tile height).
+ *
+ * Result: primary actions reachable in one glance + one tap, secondary
+ * content visually quieter, setup chores tucked at the bottom.
  */
-private data class HomeTile(
+
+private data class Entry(
     val title: String,
     val subtitle: String,
     val icon: ImageVector,
-    val route: String?,          // null = not built yet (disabled)
-    val needsPermissions: Boolean = false,
-    /** Gel icon color (designs/glass-01: every tile has its own vivid hue). */
-    val gel: Long = 0xFF2F6BFF
+    val route: String,
+    val gel: Long,
+    val needsPermissions: Boolean = false
 )
 
-private val tiles = listOf(
-    HomeTile("Connect", "Pair with a PC or device", Icons.Rounded.Bluetooth, Routes.CONNECTION, needsPermissions = true, gel = 0xFF2F6BFF),
-    HomeTile("Mouse", "Trackpad and buttons", Icons.Rounded.Mouse, Routes.MOUSE, gel = 0xFF3D8BFF),
-    HomeTile("Air Mouse", "Point the phone to move", Icons.Rounded.Mouse, Routes.AIR_MOUSE, gel = 0xFF00C2A8),
-    HomeTile("Keyboard", "Shortcuts & text input", Icons.Rounded.Keyboard, Routes.KEYBOARD, gel = 0xFF9B59F6),
-    HomeTile("Full Board", "Complete QWERTY keyboard", Icons.Rounded.Keyboard, Routes.FULL_KEYBOARD, gel = 0xFF7B68EE),
-    HomeTile("PC Combo", "Trackpad + keyboard together", Icons.Rounded.Computer, Routes.PC_COMBO, gel = 0xFF00A8CC),
-    HomeTile("Numpad", "Numeric keypad", Icons.Rounded.Pin, Routes.NUMPAD, gel = 0xFFFF8C42),
-    HomeTile("Multimedia", "Media and volume", Icons.Rounded.MusicNote, Routes.MULTIMEDIA, gel = 0xFF17C3CE),
-    HomeTile("Presenter", "Slide control", Icons.Rounded.Slideshow, Routes.PRESENTER, gel = 0xFFF5C542),
-    HomeTile("Gamepad", "Game controller", Icons.Rounded.Gamepad, Routes.GAMEPAD, gel = 0xFFFF5C8A),
-    HomeTile("Layouts", "Custom control screens", Icons.Rounded.Dashboard, Routes.LAYOUTS, gel = 0xFF2ED5A5),
-    HomeTile("Macros", "Record & play sequences", Icons.Rounded.Bolt, Routes.MACROS, gel = 0xFF57D163),
-    HomeTile("Themes", "Change the whole look", Icons.Rounded.Palette, Routes.THEMES, gel = 0xFFB86BFF),
-    HomeTile("Pad Builder", "Design your own gamepad", Icons.Rounded.SportsEsports, Routes.GAMEPAD_BUILDER, gel = 0xFF6E8BFF),
-    HomeTile("WiFi Control", "NEW • control over your network", Icons.Rounded.Wifi, Routes.WIFI_CONNECT, gel = 0xFF00B0FF),
-    HomeTile("Health", "Live connection metrics", Icons.Rounded.MonitorHeart, Routes.CONNECTION_HEALTH, gel = 0xFF00C853),
-    HomeTile("Settings", "Tune everything", Icons.Rounded.Settings, Routes.SETTINGS, gel = 0xFF8B9BB5),
-    HomeTile("Help", "Pairing & troubleshooting", Icons.AutoMirrored.Rounded.HelpOutline, Routes.HELP, gel = 0xFF64B6F0)
+// Tier 1 — the three daily drivers.
+private val heroEntries = listOf(
+    Entry("Mouse", "Trackpad & buttons", Icons.Rounded.Mouse, Routes.MOUSE, 0xFF3D8BFF),
+    Entry("Keyboard", "Text, board, combo", Icons.Rounded.Keyboard, Routes.KEYBOARD, 0xFF9B59F6),
+    Entry("Gamepad", "Play & build pads", Icons.Rounded.Gamepad, Routes.GAMEPAD, 0xFFFF5C8A)
+)
+
+// Tier 2 — remaining control surfaces.
+private val controlEntries = listOf(
+    Entry("Air Mouse", "Point to move", Icons.Rounded.Mouse, Routes.AIR_MOUSE, 0xFF00C2A8),
+    Entry("Multimedia", "Media & volume", Icons.Rounded.MusicNote, Routes.MULTIMEDIA, 0xFF17C3CE),
+    Entry("Numpad", "Numeric keypad", Icons.Rounded.Pin, Routes.NUMPAD, 0xFFFF8C42),
+    Entry("Presenter", "Slide control", Icons.Rounded.Slideshow, Routes.PRESENTER, 0xFFF5C542),
+    Entry("Layouts", "Custom decks", Icons.Rounded.Dashboard, Routes.LAYOUTS, 0xFF2ED5A5),
+    Entry("Macros", "Record & play", Icons.Rounded.Bolt, Routes.MACROS, 0xFF57D163)
+)
+
+// Tier 3 — setup & tools (compact rows).
+private val setupEntries = listOf(
+    Entry("Connect", "Pair with a PC or device", Icons.Rounded.Bluetooth, Routes.CONNECTION, 0xFF2F6BFF, needsPermissions = true),
+    Entry("WiFi Control", "Control over your network", Icons.Rounded.Wifi, Routes.WIFI_CONNECT, 0xFF00B0FF),
+    Entry("Health", "Live connection metrics", Icons.Rounded.MonitorHeart, Routes.CONNECTION_HEALTH, 0xFF00C853),
+    Entry("Themes", "Change the whole look", Icons.Rounded.Palette, Routes.THEMES, 0xFFB86BFF),
+    Entry("Settings", "Tune everything", Icons.Rounded.Settings, Routes.SETTINGS, 0xFF8B9BB5),
+    Entry("Help", "Pairing & troubleshooting", Icons.AutoMirrored.Rounded.HelpOutline, Routes.HELP, 0xFF64B6F0)
 )
 
 @Composable
@@ -106,153 +117,303 @@ fun HomeScreen(
     val permissionsGranted by viewModel.permissionsGranted.collectAsState()
     val spec = LocalAppTheme.current
 
-    // If permissions are already granted, keep the engine warm so the
-    // status card is truthful even before visiting the Connection screen.
     LaunchedEffect(Unit) { viewModel.initialize() }
 
+    fun open(entry: Entry) {
+        if (entry.needsPermissions && !permissionsGranted) onNavigate(Routes.PERMISSIONS)
+        else onNavigate(entry.route)
+    }
+
     Scaffold(containerColor = Color.Transparent) { padding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
+            Spacer(Modifier.height(12.dp))
+
+            // ---------- Header ----------
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Spacer(Modifier.height(12.dp))
-                // Title and Version Chip Header
+                Column {
+                    Text(
+                        text = if (spec.monoFont) "AEROPAD" else "AeroPad",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        text = if (spec.monoFont) "WIRELESS KEYBOARD, MOUSE & GAMEPAD"
+                        else "Wireless keyboard, mouse & gamepad",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                GlassCard(shape = CircleShape, modifier = Modifier.padding(start = 8.dp)) {
+                    Text(
+                        text = com.bluepilot.remote.BuildConfig.VERSION_NAME,
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontFamily = if (spec.monoFont) FontFamily.Monospace else FontFamily.Default
+                        ),
+                        color = spec.primary,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                    )
+                }
+            }
+            Spacer(Modifier.height(14.dp))
+
+            // ---------- Tier 1: status + daily drivers ----------
+            // STITCH v3 — the signature Command Orb from designs A/B: a
+            // large circular status hero. Glows in the theme accent when
+            // connected, quiet outline when not. Falls back to the old
+            // status card for mono-font (HUD) themes where a round orb
+            // clashes with the avionics language.
+            if (spec.monoFont) {
+                ConnectionStatusCard(state)
+            } else {
+                CommandOrb(state)
+            }
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                heroEntries.forEach { entry ->
+                    HeroCard(
+                        entry = entry,
+                        modifier = Modifier.weight(1f),
+                        onClick = { open(entry) }
+                    )
+                }
+            }
+
+            // ---------- Tier 2: controls ----------
+            SectionLabel(if (spec.monoFont) "CONTROLS" else "Controls")
+            controlEntries.chunked(2).forEach { rowPair ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Column {
-                        Text(
-                            text = if (spec.monoFont) "AEROPAD" else "AeroPad",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Text(
-                            text = if (spec.monoFont) "WIRELESS KEYBOARD, MOUSE & GAMEPAD" else "Wireless keyboard, mouse & gamepad",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                    rowPair.forEach { entry ->
+                        ControlCard(
+                            entry = entry,
+                            modifier = Modifier.weight(1f),
+                            onClick = { open(entry) }
                         )
                     }
-                    // Version Chip — reads BuildConfig so CI builds show their real version
-                    GlassCard(
-                        shape = CircleShape,
-                        modifier = Modifier.padding(start = 8.dp)
-                    ) {
-                        Text(
-                            text = com.bluepilot.remote.BuildConfig.VERSION_NAME,
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontFamily = if (spec.monoFont) FontFamily.Monospace else FontFamily.Default
-                            ),
-                            color = spec.primary,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                        )
-                    }
+                    if (rowPair.size == 1) Spacer(Modifier.weight(1f))
                 }
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(10.dp))
+            }
 
-                ConnectionStatusCard(state)
-
-                Spacer(Modifier.height(16.dp))
-
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(bottom = 128.dp), // Space to scroll past floating dock + gesture bar
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(tiles) { tile ->
-                        HomeTileCard(
-                            tile = tile,
-                            enabled = tile.route != null,
-                            onClick = {
-                                val route = tile.route ?: return@HomeTileCard
-                                if (tile.needsPermissions && !permissionsGranted) {
-                                    onNavigate(Routes.PERMISSIONS)
-                                } else {
-                                    onNavigate(route)
-                                }
-                            }
-                        )
+            // ---------- Tier 3: setup & tools ----------
+            SectionLabel(if (spec.monoFont) "SETUP & TOOLS" else "Setup & tools")
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                Column {
+                    setupEntries.forEachIndexed { i, entry ->
+                        SetupRow(entry = entry, onClick = { open(entry) })
+                        if (i < setupEntries.lastIndex) {
+                            androidx.compose.material3.HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f),
+                                modifier = Modifier.padding(horizontal = 14.dp)
+                            )
+                        }
                     }
                 }
             }
-            // NOTE: the old in-screen dock was removed — the app-level
-            // GlassDock (BluePilotApp) is the single bottom dock now.
-            // Having both stacked caused ghost icons to peek out behind
-            // the floating dock (bug reported via screenshot).
+
+            // Space to scroll past floating dock + gesture bar.
+            Spacer(Modifier.height(120.dp))
         }
     }
 }
 
+/**
+ * STITCH v3 — Command Orb: the circular connection hero both generated
+ * designs share. Connected = accent ring + soft radial glow + device
+ * name; anything else = dim ring + state text. Pure draw-phase glow
+ * (radial gradient), no per-frame allocation.
+ */
 @Composable
-private fun HomeTileCard(tile: HomeTile, enabled: Boolean, onClick: () -> Unit) {
-    // SECTION 2 - 3D: idle float loop + press-lift. Cards gently hover
-    // (staggered by title hash so they do not move in sync) and sink with
-    // pressDepth3D on touch. Off under Reduce Motion / FLAT quality.
-    val reduceMotion = com.bluepilot.remote.ui.components.LocalReduceMotion.current ||
-        com.bluepilot.remote.ui.components.LocalQuality3D.current == com.bluepilot.remote.ui.components.Quality3D.FLAT
-    val floatAnim = rememberInfiniteTransition(label = "tileFloat")
-    // SECTION 5 PERF FIX: keep the animated value as State and read it
-    // inside graphicsLayer (draw phase). Reading `phase` directly here
-    // recomposed every tile on every animation frame (16 tiles × 60fps).
-    val phaseState = floatAnim.animateFloat(
-        initialValue = 0f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            tween(3600 + (tile.title.hashCode() and 0x3FF), easing = androidx.compose.animation.core.LinearEasing),
-            RepeatMode.Restart
-        ), label = "tilePhase"
-    )
-
+private fun CommandOrb(state: HidConnectionState) {
     val spec = LocalAppTheme.current
-    val gel = tile.gel.toComposeColor()
-
-    GlassCard(
-        modifier = Modifier
-            .androidGraphicsFloat(phaseState, !reduceMotion)
-            .clickable(enabled = enabled, onClick = onClick)
+    val connected = state is HidConnectionState.Connected
+    val ring = if (connected) spec.primary else spec.outline
+    val (title, subtitle) = when (state) {
+        is HidConnectionState.Connected ->
+            state.device.name to "● connected"
+        is HidConnectionState.Connecting -> "Connecting…" to state.device.name
+        HidConnectionState.BluetoothDisabled -> "Bluetooth off" to "tap Connect below"
+        HidConnectionState.PermissionMissing -> "Setup needed" to "grant permissions"
+        is HidConnectionState.Error -> "Not connected" to "tap Connect below"
+        else -> "Not connected" to "tap Connect below"
+    }
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Box(
+            modifier = Modifier
+                .size(132.dp)
+                .background(
+                    androidx.compose.ui.graphics.Brush.radialGradient(
+                        listOf(
+                            ring.copy(alpha = if (connected) 0.28f else 0.10f),
+                            androidx.compose.ui.graphics.Color.Transparent
+                        )
+                    ),
+                    CircleShape
+                )
+                .padding(10.dp)
+                .background(spec.surface.copy(alpha = spec.surfaceAlpha), CircleShape)
+                .border(
+                    width = if (connected) 2.dp else 1.dp,
+                    color = ring,
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = Icons.Rounded.Computer,
+                    contentDescription = null,
+                    tint = if (connected) spec.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(34.dp)
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = title.take(14),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (connected) spec.connected
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1
+                )
+            }
+        }
+    }
+}
+
+
+
+@Composable
+private fun SectionLabel(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = 18.dp, bottom = 8.dp, start = 2.dp)
+    )
+}
+
+/** Tier 1 — tall feature card: big gel icon, bold title. */
+@Composable
+private fun HeroCard(entry: Entry, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    val spec = LocalAppTheme.current
+    GlassCard(modifier = modifier.clickable(onClick = onClick)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             GelIcon(
-                color = gel,
-                icon = tile.icon,
-                contentDescription = tile.title,
-                enabled = enabled
+                color = entry.gel.toComposeColor(),
+                icon = entry.icon,
+                contentDescription = entry.title,
+                size = 52.dp,
+                iconSize = 30.dp
             )
             Spacer(Modifier.height(10.dp))
             Text(
-                text = if (spec.monoFont) tile.title.uppercase() else tile.title,
-                style = if (spec.monoFont) MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Monospace)
+                text = if (spec.monoFont) entry.title.uppercase() else entry.title,
+                style = if (spec.monoFont)
+                    MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Monospace)
                 else MaterialTheme.typography.titleMedium,
-                color = if (enabled) MaterialTheme.colorScheme.onSurface
-                else MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-                text = if (enabled) tile.subtitle else "Coming in a later module",
-                style = MaterialTheme.typography.bodyMedium,
+                text = entry.subtitle,
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
 
-/**
- * SECTION 2 - idle 3D float: gentle vertical bob via graphicsLayer.
- * SECTION 5 PERF: takes State<Float> so the per-frame value is read in
- * the draw phase only — animating costs zero recompositions.
- */
-private fun androidx.compose.ui.Modifier.androidGraphicsFloat(
-    phase: androidx.compose.runtime.State<Float>, enabled: Boolean
-): androidx.compose.ui.Modifier =
-    if (!enabled) this else this.then(
-        androidx.compose.ui.Modifier.graphicsLayer {
-            translationY = kotlin.math.sin(phase.value * 2f * Math.PI).toFloat() * 3f * density
+/** Tier 2 — standard control tile (icon left, text right = compact). */
+@Composable
+private fun ControlCard(entry: Entry, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    val spec = LocalAppTheme.current
+    GlassCard(modifier = modifier.clickable(onClick = onClick)) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            GelIcon(
+                color = entry.gel.toComposeColor(),
+                icon = entry.icon,
+                contentDescription = entry.title,
+                size = 38.dp,
+                iconSize = 22.dp
+            )
+            Spacer(Modifier.size(10.dp))
+            Column {
+                Text(
+                    text = if (spec.monoFont) entry.title.uppercase() else entry.title,
+                    style = if (spec.monoFont)
+                        MaterialTheme.typography.titleSmall.copy(fontFamily = FontFamily.Monospace)
+                    else MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = entry.subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1
+                )
+            }
         }
-    )
+    }
+}
+
+/** Tier 3 — compact list row inside one shared card. */
+@Composable
+private fun SetupRow(entry: Entry, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 11.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = entry.icon,
+            contentDescription = entry.title,
+            tint = entry.gel.toComposeColor(),
+            modifier = Modifier.size(22.dp)
+        )
+        Spacer(Modifier.size(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = entry.title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        Text(
+            text = entry.subtitle,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}

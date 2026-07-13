@@ -55,10 +55,16 @@ class SettingsViewModel @Inject constructor(
     // ----- App -----
     fun setTheme(theme: ThemeMode) = updateApp { it.copy(theme = theme) }
 
-    /** SECTION 1: applying a theme also records it in the recents row. */
+    /** SECTION 1: applying a theme also records it in the recents row.
+     *  UX FIX: picking a theme now also sets light/dark mode to MATCH the
+     *  theme — tap a dark theme, the app goes dark; tap a light theme, it
+     *  goes light. No more "switch mode first, then pick" double step. */
     fun setThemeId(id: String) = updateApp {
+        val spec = com.bluepilot.remote.ui.theme.BuiltInThemes.byId(id)
         it.copy(
             themeId = id,
+            theme = if (spec.isDark) com.bluepilot.remote.model.ThemeMode.DARK
+            else com.bluepilot.remote.model.ThemeMode.LIGHT,
             recentThemes = com.bluepilot.remote.ui.theme.ThemeListCodec.push(it.recentThemes, id)
         )
     }.also { haptics.play(com.bluepilot.remote.model.gamepad.HapticPattern.MEDIUM_CLICK) }
@@ -87,6 +93,7 @@ class SettingsViewModel @Inject constructor(
     fun setAutomationApi(value: Boolean) = updateApp { it.copy(automationApi = value) }   // V2 M8 b2
     fun setLightAutoTheme(value: Boolean) = updateApp { it.copy(lightAutoTheme = value) }   // V2 M3
     fun setSpokenAlerts(value: Boolean) = updateApp { it.copy(spokenAlerts = value) }   // V2 M5 b2
+    fun setAutoReconnectLast(value: Boolean) = updateApp { it.copy(autoReconnectLast = value) }   // V2 M4 b2
 
     // ----- Mouse -----
     fun setMouseSensitivity(value: Int) = updateMouse { it.copy(sensitivity = value) }

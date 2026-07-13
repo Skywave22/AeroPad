@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -63,6 +64,8 @@ import kotlin.math.roundToInt
 @Composable
 fun GamepadScreen(
     onBack: () -> Unit,
+    // UI/UX v2.1 — Pad Builder is now an OPTION of the Gamepad hub.
+    onOpenBuilder: () -> Unit = {},
     viewModel: RemoteControlViewModel = hiltViewModel()
 ) {
     val isConnected by viewModel.isConnected.collectAsState()
@@ -84,6 +87,14 @@ fun GamepadScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    // UI/UX v2.1 — custom pads live here now, not on Home.
+                    androidx.compose.material3.AssistChip(
+                        onClick = onOpenBuilder,
+                        label = { Text("Pad Builder") }
+                    )
+                    Spacer(Modifier.width(6.dp))
                 }
             )
         }

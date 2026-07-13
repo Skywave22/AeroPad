@@ -373,52 +373,59 @@ private fun GamepadPlayer(viewModel: GamepadBuilderViewModel) {
                     }
                 },
                 actions = {
-                    // SECTION 7 — motion controls (gyro aim on right stick)
-                    if (viewModel.hasGyro) {
-                        FilterChip(
-                            selected = motionEnabled,
-                            onClick = { viewModel.setMotionEnabled(!motionEnabled) },
-                            label = { Text(if (motionEnabled) "Motion ON" else "Motion") }
+                    // UI/UX v2.1 LANDSCAPE FIX — the 6 assist chips overflowed
+                    // and got clipped in landscape. All assists now live in
+                    // ONE dropdown menu; active count badges on the button.
+                    val flickOn by viewModel.flickEnabled.collectAsState()
+                    val steerOn by viewModel.steerEnabled.collectAsState()
+                    val waveOn by viewModel.proximityEnabled.collectAsState()
+                    val strafeOn by viewModel.strafeEnabled.collectAsState()
+                    val activeCount = listOf(motionEnabled, flickOn, steerOn, waveOn, strafeOn).count { it }
+                    var assistsOpen by remember { mutableStateOf(false) }
+                    if (motionEnabled) {
+                        AssistChip(
+                            onClick = { viewModel.recenterMotion() },
+                            label = { Text("⊕") }
                         )
-                        if (motionEnabled) {
-                            AssistChip(
-                                onClick = { viewModel.recenterMotion() },
-                                label = { Text("⊕") }
+                    }
+                    Box {
+                        FilterChip(
+                            selected = activeCount > 0,
+                            onClick = { assistsOpen = true },
+                            label = { Text(if (activeCount > 0) "Assists ($activeCount)" else "Assists") }
+                        )
+                        androidx.compose.material3.DropdownMenu(
+                            expanded = assistsOpen,
+                            onDismissRequest = { assistsOpen = false }
+                        ) {
+                            if (viewModel.hasGyro) {
+                                androidx.compose.material3.DropdownMenuItem(
+                                    text = { Text((if (motionEnabled) "✓ " else "") + "Motion aim (gyro)") },
+                                    onClick = { viewModel.setMotionEnabled(!motionEnabled) }
+                                )
+                                androidx.compose.material3.DropdownMenuItem(
+                                    text = { Text((if (flickOn) "✓ " else "") + "Flick actions") },
+                                    onClick = { viewModel.setFlickEnabled(!flickOn) }
+                                )
+                            }
+                            if (viewModel.hasGravity) {
+                                androidx.compose.material3.DropdownMenuItem(
+                                    text = { Text((if (steerOn) "✓ " else "") + "Steering wheel") },
+                                    onClick = { viewModel.setSteerEnabled(!steerOn) }
+                                )
+                            }
+                            if (viewModel.hasProximity) {
+                                androidx.compose.material3.DropdownMenuItem(
+                                    text = { Text((if (waveOn) "✓ " else "") + "Wave to tap") },
+                                    onClick = { viewModel.setProximityEnabled(!waveOn) }
+                                )
+                            }
+                            androidx.compose.material3.DropdownMenuItem(
+                                text = { Text((if (strafeOn) "✓ " else "") + "Auto-strafe") },
+                                onClick = { viewModel.setStrafeEnabled(!strafeOn) }
                             )
                         }
-                        // V2 MATRIX 3 — flick-up = jump (real accelerometer).
-                        val flickOn by viewModel.flickEnabled.collectAsState()
-                        FilterChip(
-                            selected = flickOn,
-                            onClick = { viewModel.setFlickEnabled(!flickOn) },
-                            label = { Text(if (flickOn) "Flick ON" else "Flick") }
-                        )
                     }
-                    // V2 MATRIX 3 — gravity steering wheel (own sensor gate).
-                    if (viewModel.hasGravity) {
-                        val steerOn by viewModel.steerEnabled.collectAsState()
-                        FilterChip(
-                            selected = steerOn,
-                            onClick = { viewModel.setSteerEnabled(!steerOn) },
-                            label = { Text(if (steerOn) "Wheel ON" else "Wheel") }
-                        )
-                    }
-                    // V2 MATRIX 3 — proximity wave = tap (own sensor gate).
-                    if (viewModel.hasProximity) {
-                        val waveOn by viewModel.proximityEnabled.collectAsState()
-                        FilterChip(
-                            selected = waveOn,
-                            onClick = { viewModel.setProximityEnabled(!waveOn) },
-                            label = { Text(if (waveOn) "Wave ON" else "Wave") }
-                        )
-                    }
-                    // V2 MATRIX 2 — auto-strafe (no sensor needed).
-                    val strafeOn by viewModel.strafeEnabled.collectAsState()
-                    FilterChip(
-                        selected = strafeOn,
-                        onClick = { viewModel.setStrafeEnabled(!strafeOn) },
-                        label = { Text(if (strafeOn) "Strafe ON" else "Strafe") }
-                    )
                     // Quick-switch between saved gamepad profiles.
                     IconButton(onClick = { viewModel.playNext(-1) }) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Previous profile")

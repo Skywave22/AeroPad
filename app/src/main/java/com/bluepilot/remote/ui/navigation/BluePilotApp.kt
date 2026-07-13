@@ -189,11 +189,28 @@ fun BluePilotApp(
             )
         }
         composable(Routes.MOUSE) { MouseScreen(onBack = { navController.popBackStack() }) }
-        composable(Routes.KEYBOARD) { KeyboardScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.KEYBOARD) {
+            KeyboardScreen(
+                onBack = { navController.popBackStack() },
+                onOpenFullBoard = { navController.navigate(Routes.FULL_KEYBOARD) },
+                onOpenPcCombo = { navController.navigate(Routes.PC_COMBO) }
+            )
+        }
         composable(Routes.NUMPAD) { NumpadScreen(onBack = { navController.popBackStack() }) }
-        composable(Routes.MULTIMEDIA) { MultimediaScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.MULTIMEDIA) {
+            MultimediaScreen(
+                onBack = { navController.popBackStack() },
+                onOpenPresenter = { navController.navigate(Routes.PRESENTER) },
+                onOpenNumpad = { navController.navigate(Routes.NUMPAD) }
+            )
+        }
         composable(Routes.PRESENTER) { PresenterScreen(onBack = { navController.popBackStack() }) }
-        composable(Routes.GAMEPAD) { GamepadScreen(onBack = { navController.popBackStack() }) }
+        composable(Routes.GAMEPAD) {
+            GamepadScreen(
+                onBack = { navController.popBackStack() },
+                onOpenBuilder = { navController.navigate(Routes.GAMEPAD_BUILDER) }
+            )
+        }
         composable(Routes.WIFI_CONNECT) {
             com.bluepilot.remote.ui.screens.wifi.WifiConnectScreen(onBack = { navController.popBackStack() })
         }
@@ -223,8 +240,17 @@ fun BluePilotApp(
         // Layout editor (Module 6) and combo profiles (Module 7) append here.
     }
 
-    // Floating glass dock (top-level hubs only)
-    if (currentRoute in dockRoutes) {
+    // Floating glass dock — hubs only. UI/UX v2.1: animated slide in/out
+    // (auto-hides the moment any control section opens, slides back on
+    // return) instead of popping in and out.
+    androidx.compose.animation.AnimatedVisibility(
+        visible = currentRoute in dockRoutes,
+        enter = androidx.compose.animation.slideInVertically(tween(220)) { it } +
+            fadeIn(tween(180)),
+        exit = androidx.compose.animation.slideOutVertically(tween(180)) { it } +
+            fadeOut(tween(140)),
+        modifier = Modifier.align(Alignment.BottomCenter)
+    ) {
         GlassDock(
             currentRoute = currentRoute,
             onNavigate = { route ->
@@ -233,8 +259,7 @@ fun BluePilotApp(
                     launchSingleTop = true
                     restoreState = true
                 }
-            },
-            modifier = Modifier.align(Alignment.BottomCenter)
+            }
         )
     }
 
@@ -247,41 +272,8 @@ fun BluePilotApp(
         )
     }
 
-    // AEROPAD v1.0 #57 — privacy blank: long-press the mini health dot
-    // blanks the screen (connection + input engines stay fully alive);
-    // tap anywhere to restore. State is local = instant, nothing persisted.
-    var privacyBlank by androidx.compose.runtime.remember {
-        androidx.compose.runtime.mutableStateOf(false)
-    }
-    if (currentRoute != Routes.CONNECTION_HEALTH) {
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 42.dp, end = 34.dp)
-                .size(24.dp)
-                .clickable { privacyBlank = true }
-        ) {
-            androidx.compose.material3.Text(
-                "👁", modifier = Modifier.align(Alignment.Center),
-                style = androidx.compose.material3.MaterialTheme.typography.bodyMedium
-            )
-        }
-    }
-    if (privacyBlank) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(androidx.compose.ui.graphics.Color.Black)
-                .clickable { privacyBlank = false },
-            contentAlignment = Alignment.Center
-        ) {
-            androidx.compose.material3.Text(
-                "Screen hidden — connection active • tap to show",
-                color = androidx.compose.ui.graphics.Color(0xFF223044),
-                style = androidx.compose.material3.MaterialTheme.typography.bodyMedium
-            )
-        }
-    }
+    // UI/UX v2.1 — privacy-blank 👁 button removed per user feedback
+    // (cluttered the corner on every screen; feature rarely used).
 
     // V2 PART A — real FPS overlay (Choreographer-measured); toggle in
     // Settings. Lifecycle-safe: stops measuring the moment it's disabled.

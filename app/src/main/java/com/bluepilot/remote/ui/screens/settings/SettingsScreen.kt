@@ -207,6 +207,12 @@ fun SettingsScreen(
                     subtitle = "Real-time frame rate in the corner (measured, Choreographer)"
                 )
                 ToggleRow(
+                    "Reconnect on launch",
+                    app.autoReconnectLast,
+                    viewModel::setAutoReconnectLast,
+                    subtitle = "Auto-connect to your most recent host when the app opens (WiFi needs a remembered PIN)"
+                )
+                ToggleRow(
                     "Automation API (Tasker)",
                     app.automationApi,
                     viewModel::setAutomationApi,

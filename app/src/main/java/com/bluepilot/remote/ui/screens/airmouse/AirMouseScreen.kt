@@ -1,7 +1,15 @@
 package com.bluepilot.remote.ui.screens.airmouse
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -98,6 +106,16 @@ fun AirMouseScreen(
                 return@Scaffold
             }
 
+            // ---------- STITCH v3 REBUILD — radar hero ----------
+            // From A_Obsidian3D/10_AirMouse.html: concentric rings at
+            // 90/65/40%, hairline crosshair (primary @10%), and a 16dp
+            // glowing dot (shadow-[0_0_20px]). Tap toggles streaming;
+            // the dot glows only while active.
+            RadarHero(
+                active = active,
+                onToggle = { viewModel.setActive(!active) }
+            )
+
             // ---------- Master toggle ----------
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
                 Row(
@@ -167,6 +185,76 @@ fun AirMouseScreen(
                 }
             }
             Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+/**
+ * STITCH v3 — radar visualization hero (structure from the design HTML):
+ * three concentric rings (90/65/40%), crosshair hairlines at 10% primary
+ * alpha, radial glow pool, 16dp glowing accent dot. Tap = toggle stream.
+ */
+@Composable
+private fun RadarHero(active: Boolean, onToggle: () -> Unit) {
+    val spec = com.bluepilot.remote.ui.theme.LocalAppTheme.current
+    val ring = spec.primary.copy(alpha = if (active) 0.35f else 0.15f)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(230.dp)
+                .background(
+                    Brush.radialGradient(
+                        listOf(
+                            spec.primary.copy(alpha = if (active) 0.10f else 0.04f),
+                            Color.Transparent
+                        )
+                    ),
+                    CircleShape
+                )
+                .clickable(onClick = onToggle),
+            contentAlignment = Alignment.Center
+        ) {
+            // Concentric rings: 90% / 65% / 40% of the radar diameter.
+            Box(Modifier.size(207.dp).border(1.dp, ring, CircleShape))
+            Box(Modifier.size(150.dp).border(1.dp, ring.copy(alpha = ring.alpha * 0.8f), CircleShape))
+            Box(Modifier.size(92.dp).border(1.dp, ring.copy(alpha = ring.alpha * 0.6f), CircleShape))
+            // Crosshair hairlines (primary @10%).
+            Box(
+                Modifier
+                    .size(width = 207.dp, height = 1.dp)
+                    .background(spec.primary.copy(alpha = 0.10f))
+            )
+            Box(
+                Modifier
+                    .size(width = 1.dp, height = 207.dp)
+                    .background(spec.primary.copy(alpha = 0.10f))
+            )
+            // Pointing dot: 16dp, glow while streaming.
+            Box(
+                Modifier
+                    .size(16.dp)
+                    .background(
+                        Brush.radialGradient(
+                            listOf(
+                                if (active) spec.primary else spec.primary.copy(alpha = 0.4f),
+                                if (active) spec.primary.copy(alpha = 0.25f) else Color.Transparent
+                            )
+                        ),
+                        CircleShape
+                    )
+            )
+            Text(
+                if (active) "STREAMING — POINT THE PHONE" else "TAP TO START",
+                style = MaterialTheme.typography.labelSmall,
+                color = if (active) spec.primary
+                else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.offset(y = 78.dp)
+            )
         }
     }
 }

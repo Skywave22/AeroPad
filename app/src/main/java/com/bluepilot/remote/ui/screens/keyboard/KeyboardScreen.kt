@@ -51,6 +51,10 @@ import com.bluepilot.remote.viewmodel.RemoteControlViewModel
 @Composable
 fun KeyboardScreen(
     onBack: () -> Unit,
+    // UI/UX v2.1 — Full Board + PC Combo are now OPTIONS of the Keyboard
+    // hub (top-bar chips) instead of separate home tiles.
+    onOpenFullBoard: () -> Unit = {},
+    onOpenPcCombo: () -> Unit = {},
     viewModel: RemoteControlViewModel = hiltViewModel()
 ) {
     val isConnected by viewModel.isConnected.collectAsState()
@@ -64,11 +68,24 @@ fun KeyboardScreen(
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
             TopAppBar(
-                title = { Text("PC Keyboard") },
+                title = { Text("Keyboard") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    // UI/UX v2.1 — keyboard modes as options, not home tiles.
+                    androidx.compose.material3.AssistChip(
+                        onClick = onOpenFullBoard,
+                        label = { Text("Full board") }
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    androidx.compose.material3.AssistChip(
+                        onClick = onOpenPcCombo,
+                        label = { Text("PC combo") }
+                    )
+                    Spacer(Modifier.width(6.dp))
                 }
             )
         }

@@ -15,6 +15,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.AlertDialog
@@ -146,29 +150,89 @@ fun WifiConnectScreen(
                             }
                         }
                         Spacer(Modifier.height(2.dp))
+                        // STITCH v3 (02_Connect.html) — host CARDS, not chips:
+                        // horizontal shelf of min-width tiles with a 40dp
+                        // round icon coin (w-10 h-10 rounded-full + hairline)
+                        // and a status dot. Active host glows in the accent.
+                        val activeHost = (state as? WifiEngine.WifiState.Connected)?.host
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
+                            val spec = com.bluepilot.remote.ui.theme.LocalAppTheme.current
                             hostProfiles.forEach { p ->
-                                val icon = if (p.transport ==
+                                val isWifi = p.transport ==
                                     com.bluepilot.remote.data.hosts.HostProfile.TRANSPORT_WIFI
-                                ) "📶" else "🅱"
-                                AssistChip(
-                                    onClick = {
-                                        if (editHosts) viewModel.removeProfile(p.id)
-                                        else viewModel.quickConnect(p)
-                                    },
-                                    label = {
-                                        Text(
-                                            (if (editHosts) "✕ " else "$icon ") + p.label.take(16),
-                                            color = if (editHosts) MaterialTheme.colorScheme.error
-                                            else Color.Unspecified
+                                val isActive = isWifi && p.address == activeHost
+                                Column(
+                                    modifier = Modifier
+                                        .background(
+                                            spec.surface.copy(alpha = spec.surfaceAlpha),
+                                            RoundedCornerShape(16.dp)
                                         )
+                                        .border(
+                                            width = if (isActive) 1.5.dp else 1.dp,
+                                            color = if (isActive) spec.primary.copy(alpha = 0.7f)
+                                            else spec.outline,
+                                            shape = RoundedCornerShape(16.dp)
+                                        )
+                                        .clickable {
+                                            if (editHosts) viewModel.removeProfile(p.id)
+                                            else viewModel.quickConnect(p)
+                                        }
+                                        .padding(horizontal = 14.dp, vertical = 10.dp)
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .background(spec.surfaceVariant, CircleShape)
+                                                .border(
+                                                    1.dp,
+                                                    if (isActive) spec.primary.copy(alpha = 0.5f)
+                                                    else spec.outline.copy(alpha = 0.5f),
+                                                    CircleShape
+                                                ),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                if (editHosts) "✕" else if (isWifi) "🖥" else "💻",
+                                                color = if (editHosts)
+                                                    MaterialTheme.colorScheme.error
+                                                else Color.Unspecified
+                                            )
+                                        }
+                                        Spacer(Modifier.size(10.dp))
+                                        Column {
+                                            Text(
+                                                p.label.take(14),
+                                                style = MaterialTheme.typography.titleSmall,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Box(
+                                                    Modifier
+                                                        .size(6.dp)
+                                                        .background(
+                                                            if (isActive) spec.connected
+                                                            else MaterialTheme.colorScheme.outline,
+                                                            CircleShape
+                                                        )
+                                                )
+                                                Spacer(Modifier.size(4.dp))
+                                                Text(
+                                                    if (isActive) "connected"
+                                                    else if (isWifi) "WiFi" else "Bluetooth",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = if (isActive) spec.connected
+                                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
                                     }
-                                )
+                                }
                             }
                         }
                     }
@@ -283,44 +347,104 @@ fun WifiConnectScreen(
         }
     }
 
-    // ---------- PIN confirmation dialog (security) ----------
+    // ---------- STITCH v3 REBUILD — PIN pairing (19_PINPairing.html) ----------
+    // Glowing lock hero (w-20 h-20 circle + blur pool), six w-12 h-16
+    // digit boxes with the typed digits glowing in the accent, opt-in
+    // remember toggle, full-width connect button. The invisible text
+    // field underneath keeps the system keyboard + paste working.
     if (state is WifiEngine.WifiState.AwaitingPin) {
-        // V2 MATRIX 4 — opt-in PIN save for one-tap reconnect.
+        val spec = com.bluepilot.remote.ui.theme.LocalAppTheme.current
         var savePin by remember { mutableStateOf(false) }
         AlertDialog(
             onDismissRequest = { viewModel.disconnect() },
-            title = { Text("Enter receiver PIN") },
+            title = null,
             text = {
-                Column {
-                    Text(
-                        "Type the 6-digit PIN shown by the AeroPad receiver on your PC. " +
-                            "This confirms you own both devices.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // Lock hero with radial glow pool.
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .background(
+                                androidx.compose.ui.graphics.Brush.radialGradient(
+                                    listOf(spec.primary.copy(alpha = 0.20f), Color.Transparent)
+                                ),
+                                androidx.compose.foundation.shape.CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("🔐", style = MaterialTheme.typography.headlineLarge)
+                    }
                     Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = pinInput,
-                        onValueChange = { if (it.length <= 6 && it.all { c -> c.isDigit() }) pinInput = it },
-                        singleLine = true,
-                        placeholder = { Text("123456") },
-                        modifier = Modifier.fillMaxWidth()
+                    Text(
+                        "Enter the PIN shown on your PC",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        androidx.compose.material3.Checkbox(
+                    Text(
+                        "This proves you own both devices",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(14.dp))
+                    // Six digit boxes (w-12 h-16) over an invisible field.
+                    Box {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            repeat(6) { i ->
+                                val ch = pinInput.getOrNull(i)?.toString() ?: ""
+                                val filled = ch.isNotEmpty()
+                                Box(
+                                    modifier = Modifier
+                                        .size(width = 40.dp, height = 56.dp)
+                                        .background(
+                                            spec.surface.copy(alpha = spec.surfaceAlpha),
+                                            RoundedCornerShape(10.dp)
+                                        )
+                                        .androidxPinBorder(filled, spec.primary, spec.outline),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        ch,
+                                        style = MaterialTheme.typography.headlineSmall,
+                                        color = spec.primary
+                                    )
+                                }
+                            }
+                        }
+                        // Invisible input capturing digits (keyboard+paste).
+                        OutlinedTextField(
+                            value = pinInput,
+                            onValueChange = {
+                                if (it.length <= 6 && it.all { c -> c.isDigit() }) pinInput = it
+                            },
+                            modifier = Modifier
+                                .matchParentSize()
+                                .androidxAlpha(0.02f),
+                            singleLine = true
+                        )
+                    }
+                    Spacer(Modifier.height(10.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        androidx.compose.material3.Switch(
                             checked = savePin,
                             onCheckedChange = { savePin = it }
                         )
+                        Spacer(Modifier.size(8.dp))
                         Text(
-                            "Remember this host + PIN (stored on this phone only)",
-                            style = MaterialTheme.typography.bodySmall
+                            "Remember this host + PIN\n(stored on this phone only)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = { viewModel.connectWithPin(pinInput, savePin); pinInput = "" },
-                    enabled = pinInput.length == 6
+                    enabled = pinInput.length == 6,
+                    modifier = Modifier.fillMaxWidth()
                 ) { Text("Connect") }
             },
             dismissButton = {
@@ -329,3 +453,20 @@ fun WifiConnectScreen(
         )
     }
 }
+
+/** PIN box border: accent when the slot is filled, quiet outline when empty. */
+private fun Modifier.androidxPinBorder(
+    filled: Boolean,
+    accent: Color,
+    outline: Color
+): Modifier = this.then(
+    Modifier.border(
+        width = if (filled) 1.5.dp else 1.dp,
+        color = if (filled) accent.copy(alpha = 0.7f) else outline,
+        shape = RoundedCornerShape(10.dp)
+    )
+)
+
+/** Near-invisible but focusable overlay field. */
+private fun Modifier.androidxAlpha(a: Float): Modifier =
+    this.then(Modifier.graphicsLayer { alpha = a })

@@ -116,6 +116,48 @@ fun ConnectionHealthScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // ---------- STITCH v3 — flight-deck metric hero (13_Health.html):
+            // three cards with headline-xl numbers that glow in their status
+            // color (drop-shadow[0_0_8px]), tracking-wide caps labels. All
+            // values REAL: WiFi RTT (or BT n/a), report rate, failure rate.
+            run {
+                val spec = com.bluepilot.remote.ui.theme.LocalAppTheme.current
+                val mode by viewModel.transportMode.collectAsState()
+                val wifiLatency by viewModel.wifiLatencyMs.collectAsState()
+                val snap by viewModel.snapshot.collectAsState()
+                // REAL failure rate from actual totals (0 sent = 0%).
+                val failPct = if (snap.totalSent > 0)
+                    snap.totalFailed * 100f / snap.totalSent else 0f
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    MetricHero(
+                        value = if (mode == com.bluepilot.remote.wifi.TransportManager.Mode.WIFI)
+                            (wifiLatency?.toString() ?: "—") else "n/a",
+                        unit = if (mode == com.bluepilot.remote.wifi.TransportManager.Mode.WIFI) "ms" else "",
+                        label = if (mode == com.bluepilot.remote.wifi.TransportManager.Mode.WIFI)
+                            "RTT · WIFI" else "RTT · BT",
+                        color = spec.primary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    MetricHero(
+                        value = "${snap.reportsPerSecond}",
+                        unit = "/s",
+                        label = "REPORTS",
+                        color = spec.connected,
+                        modifier = Modifier.weight(1f)
+                    )
+                    MetricHero(
+                        value = "%.1f".format(failPct),
+                        unit = "%",
+                        label = "FAILED",
+                        color = if (failPct > 1f) spec.error else Color(0xFFF5C542),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
             // ---------- Status card ----------
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Row(
@@ -455,5 +497,51 @@ private fun MetricRow(label: String, value: String) {
             textAlign = androidx.compose.ui.text.style.TextAlign.End,
             modifier = Modifier.weight(1.4f)
         )
+    }
+}
+
+/**
+ * STITCH v3 — flight-deck metric card: big glowing number + caps label
+ * (from 13_Health.html: headline-xl + drop-shadow glow + tracking-wider).
+ */
+@Composable
+private fun MetricHero(
+    value: String,
+    unit: String,
+    label: String,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    GlassCard(modifier = modifier) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    value,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = color
+                )
+                if (unit.isNotEmpty()) {
+                    Text(
+                        unit,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = color.copy(alpha = 0.8f),
+                        modifier = Modifier.padding(bottom = 3.dp)
+                    )
+                }
+            }
+            Text(
+                label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                letterSpacing = androidx.compose.ui.unit.TextUnit(
+                    1.5f, androidx.compose.ui.unit.TextUnitType.Sp
+                )
+            )
+        }
     }
 }
