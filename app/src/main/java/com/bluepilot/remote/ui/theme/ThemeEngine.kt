@@ -43,7 +43,7 @@ import kotlin.math.max
  *    -> HUD themes get tight 8dp instrument corners while glass themes get
  *    soft 24-28dp pills, app-wide, with zero per-screen code.
  */
-val LocalAppTheme = staticCompositionLocalOf { BuiltInThemes.PILOT_DARK }
+val LocalAppTheme = staticCompositionLocalOf { BuiltInThemes.OBSIDIAN_3D }
 
 @Composable
 fun BluePilotAppTheme(

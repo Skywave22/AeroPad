@@ -102,17 +102,14 @@ fun ThemeGalleryScreen(
             )
         }
     ) { padding ->
-        // Gallery grouped by design family (one section per mockup set).
+        // THEME CATALOG v3 — gallery grouped by the 6 new design families.
         val allFamilies: List<Pair<String, List<AppThemeSpec>>> = listOf(
-            "AeroPad" to listOf(BuiltInThemes.AERO_GLASS),
-            "Classic" to listOf(BuiltInThemes.PILOT_DARK, BuiltInThemes.PILOT_GLOW),
-            "Liquid Glass" to listOf(BuiltInThemes.LIQUID_GLASS, BuiltInThemes.LIQUID_GLASS_LIGHT),
-            "Glass × Material You" to listOf(BuiltInThemes.GLASS_YOU_DARK, BuiltInThemes.GLASS_YOU_LIGHT),
-            "Hawaii Harmony" to listOf(BuiltInThemes.HAWAII_NIGHT, BuiltInThemes.HAWAII_DAY),
-            "Cockpit HUD" to listOf(BuiltInThemes.COCKPIT_HUD, BuiltInThemes.DAY_FLIGHT),
-            "Gaming" to listOf(BuiltInThemes.DARK_NEON, BuiltInThemes.CYBERPUNK, BuiltInThemes.SYNTHWAVE, BuiltInThemes.TACTICAL),
-            "Ambient" to listOf(BuiltInThemes.GALAXY, BuiltInThemes.PASTEL, BuiltInThemes.CHROME),
-            "More" to listOf(BuiltInThemes.OLED_BLACK, BuiltInThemes.MINIMAL_LIGHT)
+            "3D" to listOf(BuiltInThemes.OBSIDIAN_3D, BuiltInThemes.CLAY_3D, BuiltInThemes.FROST_3D, BuiltInThemes.AURORA_3D),
+            "Liquid" to listOf(BuiltInThemes.LIQUID_DARK, BuiltInThemes.LIQUID_AQUA, BuiltInThemes.SUNSET_LIQUID),
+            "Glass" to listOf(BuiltInThemes.SMOKE_GLASS, BuiltInThemes.STITCH_GLASS_LIGHT),
+            "Material" to listOf(BuiltInThemes.MATERIAL_YOU_DARK, BuiltInThemes.MATERIAL_YOU_LIGHT),
+            "Pixel Experience" to listOf(BuiltInThemes.PIXEL_NIGHT, BuiltInThemes.PIXEL_SNOW),
+            "Special" to listOf(BuiltInThemes.AMOLED_VOID, BuiltInThemes.CYBER_NEON, BuiltInThemes.TERMINAL)
         )
         // Search matches theme name, family name, or "dark"/"light".
         val families = if (query.isBlank()) allFamilies else allFamilies.mapNotNull { (family, specs) ->

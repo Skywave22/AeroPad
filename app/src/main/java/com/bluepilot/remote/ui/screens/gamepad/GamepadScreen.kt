@@ -99,6 +99,85 @@ fun GamepadScreen(
             )
         }
     ) { padding ->
+        // LANDSCAPE FIX — the portrait layout (stacked stick/dpad + tall
+        // ABXY column) clipped badly in landscape (Y hid behind Start).
+        // Landscape now gets a REAL controller layout: stick+dpad side by
+        // side on the left, Select/Home/Start as a slim center column,
+        // L1/R1 + compact ABXY diamond on the right. Portrait unchanged.
+        val isLandscape = androidx.compose.ui.platform.LocalConfiguration.current.orientation ==
+            android.content.res.Configuration.ORIENTATION_LANDSCAPE
+
+        if (isLandscape) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 20.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // ---------- Left: stick + dpad side by side ----------
+                Row(
+                    modifier = Modifier.weight(1.3f),
+                    horizontalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    VirtualStick(
+                        baseSize = 120.dp, knobSize = 46.dp,
+                        onMove = { x, y -> viewModel.onStick(left = true, rawX = x, rawY = y) },
+                        onRelease = { viewModel.onStick(left = true, rawX = 0f, rawY = 0f) }
+                    )
+                    DpadCluster(
+                        keySize = 38.dp, gap = 34.dp,
+                        onPress = { dir -> haptic(); viewModel.onDpad(dir) },
+                        onRelease = { viewModel.onDpad(DpadDirection.NONE) }
+                    )
+                }
+                // ---------- Center: status + menu column ----------
+                Column(
+                    modifier = Modifier.weight(0.8f),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (!isConnected) {
+                        Text(
+                            "Not connected",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    KeyCard("Select", Modifier.fillMaxWidth(), 40.dp) { haptic(); pressAndRelease(viewModel, GamepadButton.SELECT) }
+                    KeyCard("Home", Modifier.fillMaxWidth(), 40.dp) { haptic(); pressAndRelease(viewModel, GamepadButton.HOME) }
+                    KeyCard("Start", Modifier.fillMaxWidth(), 40.dp) { haptic(); pressAndRelease(viewModel, GamepadButton.START) }
+                }
+                // ---------- Right: shoulders + compact ABXY diamond ----------
+                Column(
+                    modifier = Modifier.weight(1.3f),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        FaceButton("L1", size = 44.dp) { pressed -> viewModel.onGamepadButton(GamepadButton.L1, pressed); if (pressed) haptic() }
+                        FaceButton("R1", size = 44.dp) { pressed -> viewModel.onGamepadButton(GamepadButton.R1, pressed); if (pressed) haptic() }
+                    }
+                    // True diamond via offsets — 3 rows of stacked buttons
+                    // were what overflowed; this is 132dp tall total.
+                    Box(modifier = Modifier.size(148.dp), contentAlignment = Alignment.Center) {
+                        Box(Modifier.align(Alignment.TopCenter)) {
+                            FaceButton("Y", tint = Color(0xFFF5A623), size = 48.dp) { pressed -> viewModel.onGamepadButton(GamepadButton.Y, pressed); if (pressed) haptic() }
+                        }
+                        Box(Modifier.align(Alignment.CenterStart)) {
+                            FaceButton("X", tint = Color(0xFF2F6BFF), size = 48.dp) { pressed -> viewModel.onGamepadButton(GamepadButton.X, pressed); if (pressed) haptic() }
+                        }
+                        Box(Modifier.align(Alignment.CenterEnd)) {
+                            FaceButton("B", tint = Color(0xFFE74C3C), size = 48.dp) { pressed -> viewModel.onGamepadButton(GamepadButton.B, pressed); if (pressed) haptic() }
+                        }
+                        Box(Modifier.align(Alignment.BottomCenter)) {
+                            FaceButton("A", tint = Color(0xFF2ECC71), size = 48.dp) { pressed -> viewModel.onGamepadButton(GamepadButton.A, pressed); if (pressed) haptic() }
+                        }
+                    }
+                }
+            }
+        } else {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -167,6 +246,7 @@ fun GamepadScreen(
                 KeyCard("Start", Modifier.weight(1f)) { haptic(); pressAndRelease(viewModel, GamepadButton.START) }
             }
         }
+        }
     }
 }
 
@@ -181,11 +261,11 @@ private fun pressAndRelease(viewModel: RemoteControlViewModel, button: GamepadBu
  */
 @Composable
 private fun VirtualStick(
+    baseSize: androidx.compose.ui.unit.Dp = 140.dp,
+    knobSize: androidx.compose.ui.unit.Dp = 52.dp,
     onMove: (Float, Float) -> Unit,
     onRelease: () -> Unit
 ) {
-    val baseSize = 140.dp
-    val knobSize = 52.dp
     val density = LocalDensity.current
     val radiusPx = with(density) { (baseSize - knobSize).toPx() / 2f }
     var knob by remember { mutableStateOf(Offset.Zero) }
@@ -258,6 +338,7 @@ private fun VirtualStick(
 private fun FaceButton(
     label: String,
     tint: Color? = null,
+    size: androidx.compose.ui.unit.Dp = 56.dp,
     onPress: (Boolean) -> Unit
 ) {
     var pressed by remember { mutableStateOf(false) }
@@ -276,7 +357,7 @@ private fun FaceButton(
 
     Box(
         modifier = Modifier
-            .size(56.dp)
+            .size(size)
             .graphicsLayer {
                 val s = 1f - 0.06f * sink
                 scaleX = s; scaleY = s
@@ -323,21 +404,23 @@ private fun FaceButton(
 /** D-pad: 4 direction keys in a plus layout. */
 @Composable
 private fun DpadCluster(
+    keySize: androidx.compose.ui.unit.Dp = 44.dp,
+    gap: androidx.compose.ui.unit.Dp = 46.dp,
     onPress: (DpadDirection) -> Unit,
     onRelease: () -> Unit
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        DpadKey("▲") { pressed -> if (pressed) onPress(DpadDirection.UP) else onRelease() }
-        Row(horizontalArrangement = Arrangement.spacedBy(46.dp)) {
-            DpadKey("◀") { pressed -> if (pressed) onPress(DpadDirection.LEFT) else onRelease() }
-            DpadKey("▶") { pressed -> if (pressed) onPress(DpadDirection.RIGHT) else onRelease() }
+        DpadKey("▲", keySize) { pressed -> if (pressed) onPress(DpadDirection.UP) else onRelease() }
+        Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
+            DpadKey("◀", keySize) { pressed -> if (pressed) onPress(DpadDirection.LEFT) else onRelease() }
+            DpadKey("▶", keySize) { pressed -> if (pressed) onPress(DpadDirection.RIGHT) else onRelease() }
         }
-        DpadKey("▼") { pressed -> if (pressed) onPress(DpadDirection.DOWN) else onRelease() }
+        DpadKey("▼", keySize) { pressed -> if (pressed) onPress(DpadDirection.DOWN) else onRelease() }
     }
 }
 
 @Composable
-private fun DpadKey(label: String, onPressChange: (Boolean) -> Unit) {
+private fun DpadKey(label: String, keySize: androidx.compose.ui.unit.Dp = 44.dp, onPressChange: (Boolean) -> Unit) {
     var pressed by remember { mutableStateOf(false) }
     val sink by animateFloatAsState(
         targetValue = if (pressed) 1f else 0f,
@@ -347,7 +430,7 @@ private fun DpadKey(label: String, onPressChange: (Boolean) -> Unit) {
     val base = MaterialTheme.colorScheme.surfaceVariant
     Box(
         modifier = Modifier
-            .size(44.dp)
+            .size(keySize)
             .graphicsLayer {
                 val s = 1f - 0.07f * sink
                 scaleX = s; scaleY = s

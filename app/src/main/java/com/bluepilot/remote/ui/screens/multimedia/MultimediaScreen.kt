@@ -114,6 +114,75 @@ fun MultimediaScreen(
             )
         }
     ) { padding ->
+        // LANDSCAPE FIX — a 256dp disc + rows can't stack in a ~250dp-tall
+        // landscape viewport. Landscape: disc (smaller) on the left,
+        // transport/volume/links in a column on the right. Portrait as-is.
+        val isLandscape = androidx.compose.ui.platform.LocalConfiguration.current.orientation ==
+            android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        if (isLandscape) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                // Left: compact disc hero (works at 168dp).
+                Box(
+                    modifier = Modifier
+                        .size(168.dp)
+                        .background(
+                            Brush.radialGradient(
+                                listOf(spec.primary.copy(alpha = 0.10f), Color.Transparent)
+                            ),
+                            CircleShape
+                        )
+                        .clickable { haptic(); viewModel.mediaTap(HidConsumer.PLAY_PAUSE) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(136.dp)
+                            .background(spec.surface.copy(alpha = spec.surfaceAlpha), CircleShape)
+                            .border(1.5.dp, spec.primary.copy(alpha = 0.45f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("⏯", fontSize = 56.sp, color = spec.primary)
+                    }
+                }
+                // Right: everything else, scrollable if tight.
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    NotConnectedBanner(!isConnected)
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        TransportKey("⏮", 52.dp, spec) { haptic(); viewModel.mediaTap(HidConsumer.PREV_TRACK) }
+                        TransportKey("⏹", 62.dp, spec, error = true) { haptic(); viewModel.mediaTap(HidConsumer.STOP) }
+                        TransportKey("⏭", 52.dp, spec) { haptic(); viewModel.mediaTap(HidConsumer.NEXT_TRACK) }
+                        TransportKey("🔇", 52.dp, spec) { haptic(); viewModel.mediaTap(HidConsumer.MUTE) }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        TransportKey("Vol −", 48.dp, spec, wide = true, modifier = Modifier.weight(1f)) {
+                            haptic(); viewModel.mediaTap(HidConsumer.VOLUME_DOWN)
+                        }
+                        TransportKey("Vol +", 48.dp, spec, wide = true, modifier = Modifier.weight(1f)) {
+                            haptic(); viewModel.mediaTap(HidConsumer.VOLUME_UP)
+                        }
+                    }
+                    LinkRow("📽", "Presenter mode", spec, onOpenPresenter)
+                    LinkRow("🔢", "Numpad", spec, onOpenNumpad)
+                }
+            }
+            return@Scaffold
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()

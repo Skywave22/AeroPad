@@ -167,27 +167,51 @@ fun HomeScreen(
             Spacer(Modifier.height(14.dp))
 
             // ---------- Tier 1: status + daily drivers ----------
-            // STITCH v3 — the signature Command Orb from designs A/B: a
-            // large circular status hero. Glows in the theme accent when
-            // connected, quiet outline when not. Falls back to the old
-            // status card for mono-font (HUD) themes where a round orb
-            // clashes with the avionics language.
-            if (spec.monoFont) {
-                ConnectionStatusCard(state)
-            } else {
-                CommandOrb(state)
-            }
-            Spacer(Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                heroEntries.forEach { entry ->
-                    HeroCard(
-                        entry = entry,
+            // STITCH v3 — the signature Command Orb from designs A/B.
+            // LANDSCAPE FIX: orb and hero cards sit SIDE BY SIDE in
+            // landscape (stacked they ate the whole viewport height).
+            val isLandscape = androidx.compose.ui.platform.LocalConfiguration.current.orientation ==
+                android.content.res.Configuration.ORIENTATION_LANDSCAPE
+            if (isLandscape && !spec.monoFont) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    CommandOrb(state, modifier = Modifier)
+                    Column(
                         modifier = Modifier.weight(1f),
-                        onClick = { open(entry) }
-                    )
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            heroEntries.forEach { entry ->
+                                HeroCard(
+                                    entry = entry,
+                                    modifier = Modifier.weight(1f),
+                                    onClick = { open(entry) }
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                if (spec.monoFont) {
+                    ConnectionStatusCard(state)
+                } else {
+                    CommandOrb(state)
+                }
+                Spacer(Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    heroEntries.forEach { entry ->
+                        HeroCard(
+                            entry = entry,
+                            modifier = Modifier.weight(1f),
+                            onClick = { open(entry) }
+                        )
+                    }
                 }
             }
 
@@ -239,7 +263,10 @@ fun HomeScreen(
  * (radial gradient), no per-frame allocation.
  */
 @Composable
-private fun CommandOrb(state: HidConnectionState) {
+private fun CommandOrb(
+    state: HidConnectionState,
+    modifier: Modifier = Modifier.fillMaxWidth()
+) {
     val spec = LocalAppTheme.current
     val connected = state is HidConnectionState.Connected
     val ring = if (connected) spec.primary else spec.outline
@@ -253,7 +280,7 @@ private fun CommandOrb(state: HidConnectionState) {
         else -> "Not connected" to "tap Connect below"
     }
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(

@@ -3,22 +3,30 @@ package com.bluepilot.remote.ui.theme
 import androidx.compose.ui.graphics.Color
 
 /**
- * The built-in theme catalog — each one is a direct translation of a
- * design mockup from the redesign phase (designs/ folder).
+ * THEME CATALOG v3 — full rebuild (all legacy themes removed).
+ *
+ * 16 premium themes in 6 design families, every family with a dark and a
+ * light face so the one-tap mode-follows-theme behavior always has a
+ * counterpart:
+ *
+ *   3D        — Obsidian 3D · Clay 3D          (deep shadows, pressable slabs)
+ *   LIQUID    — Liquid Dark · Liquid Aqua      (flowing gradient pools)
+ *   GLASS     — Smoke Glass · Glass Light      (frosted translucent panes)
+ *   MATERIAL  — Material You Dark/Light        (Material 3 tonal surfaces)
+ *   PIXEL     — Pixel Night · Pixel Snow       (Google Pixel launcher feel)
+ *   EXTRA     — AMOLED Void · Aurora 3D · Sunset Liquid · Cyber Neon ·
+ *               Frost 3D · Terminal (mono)
+ *
+ * Legacy stored ids resolve through [byId]'s safe fallback (Obsidian 3D),
+ * so upgrading users never crash — they just land on the new default.
  */
 object BuiltInThemes {
 
-    /**
-     * STITCH v3 DESIGN A — "Obsidian 3D" (the new default).
-     * Values extracted from the real generated design HTMLs:
-     * pure black #050505 backdrop, floating #131313 obsidian slabs with
-     * #2a2a30 hairlines, glowing cyan #2FD9F4 accent with violet support.
-     * Premium 3D: strong glow, deep radius, edge light on card tops.
-     */
+    // ==================== 3D FAMILY ====================
+
+    /** STITCH flagship — pitch-black 3D slabs, glowing cyan. DEFAULT. */
     val OBSIDIAN_3D = AppThemeSpec(
-        id = "obsidian_3d",
-        name = "Obsidian 3D",
-        isDark = true,
+        id = "obsidian_3d", name = "Obsidian 3D", isDark = true,
         primary = Color(0xFF2FD9F4), onPrimary = Color(0xFF00363E),
         secondary = Color(0xFF7C6CF5),
         background = Color(0xFF050505), onBackground = Color(0xFFE5E2E1),
@@ -26,26 +34,86 @@ object BuiltInThemes {
         surfaceVariant = Color(0xFF1C1C20), onSurfaceVariant = Color(0xFF9BA3AE),
         outline = Color(0xFF2A2A30),
         backgroundOrbs = listOf(
-            // Single restrained cyan halo behind the hero zone — depth fog,
-            // not decoration (matches the generated screens).
             ThemeOrb(Color(0xFF2FD9F4), 0.50f, 0.14f, 0.44f, 0.10f),
             ThemeOrb(Color(0xFF7C6CF5), 0.85f, 0.92f, 0.34f, 0.07f)
         ),
         cornerRadius = 24, surfaceAlpha = 0.94f, edgeGlow = true, elevation = 4,
-        glowColor = Color(0xFF2FD9F4),
-        connected = Color(0xFF66F796)
+        glowColor = Color(0xFF2FD9F4), connected = Color(0xFF66F796)
     )
 
-    /**
-     * STITCH v3 DESIGN B — "Glass Light" (Obsidian's light counterpart).
-     * Extracted values: ivory-blue #F9F9FF field, pure white glass panes,
-     * #D8E3FB specular borders, sapphire #2563EB with cyan support,
-     * slate ink #111C2D text. visionOS liquid-glass feel.
-     */
+    /** Soft-clay neumorphic light: embossed surfaces, gentle indigo. */
+    val CLAY_3D = AppThemeSpec(
+        id = "clay_3d", name = "Clay 3D", isDark = false,
+        primary = Color(0xFF6C8CFF), onPrimary = Color.White,
+        secondary = Color(0xFF9F7CFF),
+        background = Color(0xFFE8ECF4), onBackground = Color(0xFF2A3040),
+        surface = Color(0xFFF2F5FA), onSurface = Color(0xFF2A3040),
+        surfaceVariant = Color(0xFFDDE4F0), onSurfaceVariant = Color(0xFF6B7690),
+        outline = Color(0xFFC9D2E4),
+        cornerRadius = 26, surfaceAlpha = 1f, edgeGlow = false, elevation = 6,
+        glowColor = Color(0xFF6C8CFF)
+    )
+
+    // ==================== LIQUID FAMILY ====================
+
+    /** Deep-sea liquid: indigo ink with flowing violet/cyan pools. */
+    val LIQUID_DARK = AppThemeSpec(
+        id = "liquid_dark", name = "Liquid Dark", isDark = true,
+        primary = Color(0xFF64B5FF), onPrimary = Color(0xFF002B52),
+        secondary = Color(0xFF9C7BFF),
+        background = Color(0xFF0A0E1E), onBackground = Color(0xFFE9EEFC),
+        surface = Color(0xFF141A30), onSurface = Color(0xFFE9EEFC),
+        surfaceVariant = Color(0xFF1D2440), onSurfaceVariant = Color(0xFFA2AECB),
+        outline = Color(0xFF32406A),
+        backgroundOrbs = listOf(
+            ThemeOrb(Color(0xFF3B5BFF), 0.15f, 0.10f, 0.48f, 0.30f),
+            ThemeOrb(Color(0xFF8A4DFF), 0.90f, 0.40f, 0.42f, 0.24f),
+            ThemeOrb(Color(0xFF22D3EE), 0.35f, 0.92f, 0.40f, 0.20f)
+        ),
+        cornerRadius = 26, surfaceAlpha = 0.82f, edgeGlow = true, elevation = 0,
+        glowColor = Color(0xFF64B5FF)
+    )
+
+    /** Flowing water light: aqua gradients over a bright surface. */
+    val LIQUID_AQUA = AppThemeSpec(
+        id = "liquid_aqua", name = "Liquid Aqua", isDark = false,
+        primary = Color(0xFF0097A7), onPrimary = Color.White,
+        secondary = Color(0xFF00BFA5),
+        background = Color(0xFFEDFBFC), onBackground = Color(0xFF10333A),
+        surface = Color(0xFFFFFFFF), onSurface = Color(0xFF10333A),
+        surfaceVariant = Color(0xFFD9F3F5), onSurfaceVariant = Color(0xFF48717A),
+        outline = Color(0xFFB6E2E8),
+        backgroundOrbs = listOf(
+            ThemeOrb(Color(0xFF4DD0E1), 0.20f, 0.08f, 0.50f, 0.30f),
+            ThemeOrb(Color(0xFF80DEEA), 0.85f, 0.55f, 0.44f, 0.26f),
+            ThemeOrb(Color(0xFFA7FFEB), 0.40f, 0.95f, 0.50f, 0.30f)
+        ),
+        cornerRadius = 26, surfaceAlpha = 0.86f, edgeGlow = true, elevation = 2,
+        glowColor = Color(0xFF0097A7)
+    )
+
+    // ==================== GLASS FAMILY ====================
+
+    /** Dark smoked glass: graphite panes with a silver sheen. */
+    val SMOKE_GLASS = AppThemeSpec(
+        id = "smoke_glass", name = "Smoke Glass", isDark = true,
+        primary = Color(0xFF8EF6FF), onPrimary = Color(0xFF00363E),
+        secondary = Color(0xFFB0BEC5),
+        background = Color(0xFF0C0E14), onBackground = Color(0xFFEEF0FA),
+        surface = Color(0xFF181C28), onSurface = Color(0xFFEEF0FA),
+        surfaceVariant = Color(0xFF232A3C), onSurfaceVariant = Color(0xFF8891AB),
+        outline = Color(0xFF323A54),
+        backgroundOrbs = listOf(
+            ThemeOrb(Color(0xFF8EF6FF), 0.80f, 0.12f, 0.36f, 0.10f),
+            ThemeOrb(Color(0xFFFF9AF5), 0.15f, 0.85f, 0.34f, 0.08f)
+        ),
+        cornerRadius = 20, surfaceAlpha = 0.70f, edgeGlow = true, elevation = 0,
+        glowColor = Color(0xFF8EF6FF)
+    )
+
+    /** STITCH flagship — visionOS liquid-glass light. */
     val STITCH_GLASS_LIGHT = AppThemeSpec(
-        id = "stitch_glass_light",
-        name = "Glass Light",
-        isDark = false,
+        id = "stitch_glass_light", name = "Glass Light", isDark = false,
         primary = Color(0xFF2563EB), onPrimary = Color.White,
         secondary = Color(0xFF06B6D4),
         background = Color(0xFFF9F9FF), onBackground = Color(0xFF111C2D),
@@ -53,398 +121,206 @@ object BuiltInThemes {
         surfaceVariant = Color(0xFFECF1FF), onSurfaceVariant = Color(0xFF52565A),
         outline = Color(0xFFD8E3FB),
         backgroundOrbs = listOf(
-            // Soft caustic light pools — barely-there blue glass shimmer.
             ThemeOrb(Color(0xFFB4C5FF), 0.20f, 0.10f, 0.50f, 0.30f),
             ThemeOrb(Color(0xFF57DFFE), 0.85f, 0.30f, 0.40f, 0.20f),
             ThemeOrb(Color(0xFFDEE8FF), 0.50f, 0.95f, 0.55f, 0.45f)
         ),
         cornerRadius = 24, surfaceAlpha = 0.88f, edgeGlow = true, elevation = 3,
-        glowColor = Color(0xFF2563EB),
-        connected = Color(0xFF16A34A)
+        glowColor = Color(0xFF2563EB), connected = Color(0xFF16A34A)
     )
 
-    /** Classic BluePilot look (the pre-update default). */
-    /** STITCH REDESIGN — "AeroPad Liquid Glass": the earlier default look.
-     *  Deep navy ink #0B1220, teal/cyan accent, frosted glass surfaces,
-     *  soft teal+purple orbs — matches the generated design system. */
-    val AERO_GLASS = AppThemeSpec(
-        id = "aero_glass",
-        name = "Aero Glass",
-        isDark = true,
-        primary = Color(0xFF22D3EE), onPrimary = Color(0xFF06222B),
-        secondary = Color(0xFF7C6CF5),
-        background = Color(0xFF0B1220), onBackground = Color(0xFFE8F1F8),
-        surface = Color(0xFF131C2E), onSurface = Color(0xFFE8F1F8),
-        surfaceVariant = Color(0xFF1B2740), onSurfaceVariant = Color(0xFFA6B6CE),
-        outline = Color(0xFF2E4060),
+    // ==================== MATERIAL FAMILY ====================
+
+    /** Material 3 dark: tonal surfaces, dynamic-color feel. */
+    val MATERIAL_YOU_DARK = AppThemeSpec(
+        id = "material_you_dark", name = "Material You", isDark = true,
+        primary = Color(0xFFD0BCFF), onPrimary = Color(0xFF381E72),
+        secondary = Color(0xFFCCC2DC),
+        background = Color(0xFF141218), onBackground = Color(0xFFE6E0E9),
+        surface = Color(0xFF211F26), onSurface = Color(0xFFE6E0E9),
+        surfaceVariant = Color(0xFF2B2930), onSurfaceVariant = Color(0xFFCAC4D0),
+        outline = Color(0xFF49454F),
+        cornerRadius = 28, surfaceAlpha = 1f, edgeGlow = false, elevation = 1
+    )
+
+    /** Material 3 light counterpart. */
+    val MATERIAL_YOU_LIGHT = AppThemeSpec(
+        id = "material_you_light", name = "Material Light", isDark = false,
+        primary = Color(0xFF6750A4), onPrimary = Color.White,
+        secondary = Color(0xFF625B71),
+        background = Color(0xFFFEF7FF), onBackground = Color(0xFF1D1B20),
+        surface = Color(0xFFF7F2FA), onSurface = Color(0xFF1D1B20),
+        surfaceVariant = Color(0xFFE7E0EC), onSurfaceVariant = Color(0xFF49454F),
+        outline = Color(0xFFCAC4D0),
+        cornerRadius = 28, surfaceAlpha = 1f, edgeGlow = false, elevation = 1
+    )
+
+    // ==================== PIXEL FAMILY ====================
+
+    /** Pixel launcher at night: soft charcoal + Google blue. */
+    val PIXEL_NIGHT = AppThemeSpec(
+        id = "pixel_night", name = "Pixel Night", isDark = true,
+        primary = Color(0xFF8AB4F8), onPrimary = Color(0xFF0B2A5B),
+        secondary = Color(0xFF81C995),
+        background = Color(0xFF1F1F1F), onBackground = Color(0xFFE8EAED),
+        surface = Color(0xFF2D2E31), onSurface = Color(0xFFE8EAED),
+        surfaceVariant = Color(0xFF3C4043), onSurfaceVariant = Color(0xFF9AA0A6),
+        outline = Color(0xFF5F6368),
+        cornerRadius = 22, surfaceAlpha = 1f, edgeGlow = false, elevation = 2,
+        connected = Color(0xFF81C995)
+    )
+
+    /** Pixel in daylight: paper white + the four Google hues. */
+    val PIXEL_SNOW = AppThemeSpec(
+        id = "pixel_snow", name = "Pixel Snow", isDark = false,
+        primary = Color(0xFF1A73E8), onPrimary = Color.White,
+        secondary = Color(0xFF188038),
+        background = Color(0xFFFFFFFF), onBackground = Color(0xFF202124),
+        surface = Color(0xFFF8F9FA), onSurface = Color(0xFF202124),
+        surfaceVariant = Color(0xFFE8EAED), onSurfaceVariant = Color(0xFF5F6368),
+        outline = Color(0xFFDADCE0),
+        cornerRadius = 22, surfaceAlpha = 1f, edgeGlow = false, elevation = 2,
+        connected = Color(0xFF188038)
+    )
+
+    // ==================== EXTRAS ====================
+
+    /** Pure #000 for AMOLED battery savings; minimal chrome. */
+    val AMOLED_VOID = AppThemeSpec(
+        id = "amoled_void", name = "AMOLED Void", isDark = true,
+        primary = Color(0xFF00E5FF), onPrimary = Color(0xFF00363E),
+        secondary = Color(0xFF69F0AE),
+        background = Color(0xFF000000), onBackground = Color(0xFFEAEAEA),
+        surface = Color(0xFF0A0A0A), onSurface = Color(0xFFEAEAEA),
+        surfaceVariant = Color(0xFF141414), onSurfaceVariant = Color(0xFF8A8A8A),
+        outline = Color(0xFF232323),
+        cornerRadius = 18, surfaceAlpha = 1f, edgeGlow = false, elevation = 0,
+        glowColor = Color(0xFF00E5FF)
+    )
+
+    /** Northern lights over deep teal-black; drifting mint/violet orbs. */
+    val AURORA_3D = AppThemeSpec(
+        id = "aurora_3d", name = "Aurora 3D", isDark = true,
+        primary = Color(0xFF5EF2C1), onPrimary = Color(0xFF00382A),
+        secondary = Color(0xFF7AA8FF),
+        background = Color(0xFF071018), onBackground = Color(0xFFE6F7F4),
+        surface = Color(0xFF0D1E2A), onSurface = Color(0xFFE6F7F4),
+        surfaceVariant = Color(0xFF14293A), onSurfaceVariant = Color(0xFF7BA8A5),
+        outline = Color(0xFF1B4A52),
         backgroundOrbs = listOf(
-            ThemeOrb(Color(0xFF22D3EE), 0.85f, 0.10f, 0.38f, 0.16f),
-            ThemeOrb(Color(0xFF7C6CF5), 0.12f, 0.80f, 0.42f, 0.18f),
-            ThemeOrb(Color(0xFF16A085), 0.75f, 0.90f, 0.30f, 0.12f)
+            ThemeOrb(Color(0xFF5EF2C1), 0.25f, 0.12f, 0.50f, 0.22f),
+            ThemeOrb(Color(0xFF7AA8FF), 0.80f, 0.30f, 0.44f, 0.18f),
+            ThemeOrb(Color(0xFFB388FF), 0.55f, 0.90f, 0.40f, 0.16f)
         ),
-        cornerRadius = 22, surfaceAlpha = 0.72f, edgeGlow = true, elevation = 0,
-        glowColor = Color(0xFF22D3EE)
+        cornerRadius = 26, surfaceAlpha = 0.78f, edgeGlow = true, elevation = 2,
+        glowColor = Color(0xFF5EF2C1)
     )
 
-    val PILOT_DARK = AppThemeSpec(
-        id = "pilot_dark",
-        name = "Pilot Dark",
-        isDark = true,
-        primary = Color(0xFF2F6BFF), onPrimary = Color.White,
-        secondary = Color(0xFF29C5FF),
-        background = Color(0xFF0B0F1A), onBackground = Color(0xFFE6EAF5),
-        surface = Color(0xFF121828), onSurface = Color(0xFFE6EAF5),
-        surfaceVariant = Color(0xFF1A2238), onSurfaceVariant = Color(0xFFAAB4CE),
-        outline = Color(0xFF2C3A5C),
-        cornerRadius = 16, elevation = 2
-    )
-
-    /** designs/glass-*: frosted panels over aurora orbs, luminous edges. */
-    val LIQUID_GLASS = AppThemeSpec(
-        id = "liquid_glass",
-        name = "Liquid Glass",
-        isDark = true,
-        primary = Color(0xFF4D8DFF), onPrimary = Color.White,
-        secondary = Color(0xFF7AE7FF),
-        background = Color(0xFF0A0E1C), onBackground = Color(0xFFEDF2FF),
-        surface = Color(0xFF18203A), onSurface = Color(0xFFEDF2FF),
-        surfaceVariant = Color(0xFF222C4E), onSurfaceVariant = Color(0xFFB6C2E4),
-        outline = Color(0xFF3A4A7E),
+    /** Warm dusk gradients: coral + rose liquid over plum ink. */
+    val SUNSET_LIQUID = AppThemeSpec(
+        id = "sunset_liquid", name = "Sunset Liquid", isDark = true,
+        primary = Color(0xFFFF8A65), onPrimary = Color(0xFF4E1500),
+        secondary = Color(0xFFF06292),
+        background = Color(0xFF16090F), onBackground = Color(0xFFFFEDEF),
+        surface = Color(0xFF261119), onSurface = Color(0xFFFFEDEF),
+        surfaceVariant = Color(0xFF351A25), onSurfaceVariant = Color(0xFFB0808F),
+        outline = Color(0xFF4A2438),
         backgroundOrbs = listOf(
-            ThemeOrb(Color(0xFF3B5BFF), 0.15f, 0.10f, 0.45f, 0.40f),
-            ThemeOrb(Color(0xFF8A4DFF), 0.90f, 0.35f, 0.40f, 0.30f),
-            ThemeOrb(Color(0xFF29C5FF), 0.30f, 0.90f, 0.50f, 0.28f)
+            ThemeOrb(Color(0xFFFF7043), 0.20f, 0.15f, 0.48f, 0.22f),
+            ThemeOrb(Color(0xFFF06292), 0.85f, 0.50f, 0.44f, 0.20f),
+            ThemeOrb(Color(0xFFFFB74D), 0.45f, 0.92f, 0.40f, 0.16f)
         ),
-        cornerRadius = 24, surfaceAlpha = 0.72f, edgeGlow = true, elevation = 0
+        cornerRadius = 26, surfaceAlpha = 0.84f, edgeGlow = true, elevation = 2,
+        glowColor = Color(0xFFFF8A65)
     )
 
-    /** designs/hi-* dark: Tropical Night — moonlit lagoon + tiki lantern glow. */
-    val HAWAII_NIGHT = AppThemeSpec(
-        id = "hawaii_night",
-        name = "Hawaii Night",
-        isDark = true,
-        // SECTION 4 accessibility fix: white on bright teal was 2.5:1 —
-        // dark ink on teal reads at ~7:1 (standard for cyan primaries).
-        primary = Color(0xFF00B4C6), onPrimary = Color(0xFF042A30),
-        secondary = Color(0xFFFF6B5E),
-        background = Color(0xFF06222B), onBackground = Color(0xFFE2F6F8),
-        surface = Color(0xFF0C3340), onSurface = Color(0xFFE2F6F8),
-        surfaceVariant = Color(0xFF14424F), onSurfaceVariant = Color(0xFF9CCBD4),
-        outline = Color(0xFF20596B),
-        backgroundOrbs = listOf(
-            ThemeOrb(Color(0xFF00B4C6), 0.20f, 0.15f, 0.45f, 0.35f),
-            ThemeOrb(Color(0xFFFF6B5E), 0.88f, 0.80f, 0.35f, 0.30f),
-            ThemeOrb(Color(0xFF3EB489), 0.75f, 0.20f, 0.30f, 0.22f)
-        ),
-        cornerRadius = 26, surfaceAlpha = 0.78f, edgeGlow = true, elevation = 0,
-        connected = Color(0xFF3EB489)
-    )
-
-    /** designs/hi-* light: Island Day — sun-washed lagoon + sand. */
-    val HAWAII_DAY = AppThemeSpec(
-        id = "hawaii_day",
-        name = "Hawaii Day",
-        isDark = false,
-        primary = Color(0xFF00A0B4), onPrimary = Color.White,
-        secondary = Color(0xFFFF6B5E),
-        background = Color(0xFFF2FBFC), onBackground = Color(0xFF0E3A44),
-        surface = Color(0xFFFFFFFF), onSurface = Color(0xFF0E3A44),
-        surfaceVariant = Color(0xFFD9F2F4), onSurfaceVariant = Color(0xFF3C6E79),
-        outline = Color(0xFFA5D6DD),
-        backgroundOrbs = listOf(
-            ThemeOrb(Color(0xFF4DD9E8), 0.18f, 0.12f, 0.45f, 0.35f),
-            ThemeOrb(Color(0xFFFFB347), 0.90f, 0.30f, 0.32f, 0.28f),
-            ThemeOrb(Color(0xFFF2E3C6), 0.55f, 0.92f, 0.50f, 0.45f)
-        ),
-        cornerRadius = 26, surfaceAlpha = 0.85f, edgeGlow = true, elevation = 0
-    )
-
-    /** designs/hud-* dark: Night Flight — carbon + HUD green, mono readouts. */
-    val COCKPIT_HUD = AppThemeSpec(
-        id = "cockpit_hud",
-        name = "Cockpit HUD",
-        isDark = true,
-        primary = Color(0xFF00FF9C), onPrimary = Color.Black,
-        secondary = Color(0xFF29C5FF),
-        background = Color(0xFF0A0C10), onBackground = Color(0xFFC8FFE9),
-        surface = Color(0xFF10141C), onSurface = Color(0xFFC8FFE9),
-        surfaceVariant = Color(0xFF161D28), onSurfaceVariant = Color(0xFF6FBF9E),
-        outline = Color(0xFF1F4A38),
-        cornerRadius = 8, surfaceAlpha = 1f, edgeGlow = true, elevation = 0,
-        glowColor = Color(0xFF00FF9C),
-        connected = Color(0xFF00FF9C), connecting = Color(0xFFFFB300),
-        monoFont = true
-    )
-
-    /** Gaming RGB energy: magenta/cyan neon on near-black. */
-    val DARK_NEON = AppThemeSpec(
-        id = "dark_neon",
-        name = "Dark Neon",
-        isDark = true,
-        primary = Color(0xFFFF2D95), onPrimary = Color.White,
+    /** Cyberpunk neon: magenta/cyan on near-black violet, sharp corners. */
+    val CYBER_NEON = AppThemeSpec(
+        id = "cyber_neon", name = "Cyber Neon", isDark = true,
+        primary = Color(0xFFFF2EC4), onPrimary = Color(0xFF3A0030),
         secondary = Color(0xFF00E5FF),
-        background = Color(0xFF0D0716), onBackground = Color(0xFFF4E9FF),
-        surface = Color(0xFF190E2A), onSurface = Color(0xFFF4E9FF),
-        surfaceVariant = Color(0xFF241540), onSurfaceVariant = Color(0xFFB79ADB),
-        outline = Color(0xFF4A2A78),
+        background = Color(0xFF08040E), onBackground = Color(0xFFF2E8FF),
+        surface = Color(0xFF150A24), onSurface = Color(0xFFF2E8FF),
+        surfaceVariant = Color(0xFF20103A), onSurfaceVariant = Color(0xFF8D7AB0),
+        outline = Color(0xFF3D1466),
         backgroundOrbs = listOf(
-            ThemeOrb(Color(0xFFFF2D95), 0.10f, 0.85f, 0.40f, 0.25f),
-            ThemeOrb(Color(0xFF00E5FF), 0.90f, 0.12f, 0.38f, 0.25f)
+            ThemeOrb(Color(0xFFFF2EC4), 0.85f, 0.15f, 0.40f, 0.14f),
+            ThemeOrb(Color(0xFF00E5FF), 0.15f, 0.85f, 0.38f, 0.12f)
         ),
-        cornerRadius = 18, surfaceAlpha = 0.92f, edgeGlow = true, elevation = 0,
-        glowColor = Color(0xFFFF2D95)
+        cornerRadius = 10, surfaceAlpha = 0.88f, edgeGlow = true, elevation = 0,
+        glowColor = Color(0xFFFF2EC4)
     )
 
-    /** Pure-black AMOLED battery saver. */
-    val OLED_BLACK = AppThemeSpec(
-        id = "oled_black",
-        name = "OLED Black",
-        isDark = true,
-        primary = Color(0xFF4D8DFF), onPrimary = Color.White,
-        secondary = Color(0xFF29C5FF),
-        background = Color(0xFF000000), onBackground = Color(0xFFDDE3F0),
-        surface = Color(0xFF0A0A0C), onSurface = Color(0xFFDDE3F0),
-        surfaceVariant = Color(0xFF131318), onSurfaceVariant = Color(0xFF8B93A8),
-        outline = Color(0xFF26262E),
-        cornerRadius = 14, elevation = 0
-    )
-
-    /** Clean bright minimalism. */
-    val MINIMAL_LIGHT = AppThemeSpec(
-        id = "minimal_light",
-        name = "Minimal Light",
-        isDark = false,
-        primary = Color(0xFF2F6BFF), onPrimary = Color.White,
-        secondary = Color(0xFF29C5FF),
-        background = Color(0xFFF7F8FB), onBackground = Color(0xFF16203A),
-        surface = Color(0xFFFFFFFF), onSurface = Color(0xFF16203A),
-        surfaceVariant = Color(0xFFECEFF6), onSurfaceVariant = Color(0xFF4A5878),
-        outline = Color(0xFFD3DAE8),
-        cornerRadius = 18, elevation = 1
-    )
-
-
-    /** designs/01-08 "Modern Material Glow": Pilot Dark + neon glow accents. */
-    val PILOT_GLOW = AppThemeSpec(
-        id = "pilot_glow",
-        name = "Pilot Glow",
-        isDark = true,
-        primary = Color(0xFF2F6BFF), onPrimary = Color.White,
-        secondary = Color(0xFF29C5FF),
-        background = Color(0xFF0B0F1A), onBackground = Color(0xFFE6EAF5),
-        surface = Color(0xFF121828), onSurface = Color(0xFFE6EAF5),
-        surfaceVariant = Color(0xFF1A2238), onSurfaceVariant = Color(0xFFAAB4CE),
-        outline = Color(0xFF2C3A5C),
+    /** Frosted 3D light: icy blue-silver with soft embossed depth. */
+    val FROST_3D = AppThemeSpec(
+        id = "frost_3d", name = "Frost 3D", isDark = false,
+        primary = Color(0xFF2196F3), onPrimary = Color.White,
+        secondary = Color(0xFF00BCD4),
+        background = Color(0xFFEEF3FA), onBackground = Color(0xFF1B2536),
+        surface = Color(0xFFFCFDFF), onSurface = Color(0xFF1B2536),
+        surfaceVariant = Color(0xFFE2EAF6), onSurfaceVariant = Color(0xFF64718A),
+        outline = Color(0xFFD0DCEE),
         backgroundOrbs = listOf(
-            ThemeOrb(Color(0xFF2F6BFF), 0.85f, 0.10f, 0.35f, 0.22f),
-            ThemeOrb(Color(0xFF29C5FF), 0.10f, 0.85f, 0.40f, 0.18f)
+            ThemeOrb(Color(0xFF90CAF9), 0.18f, 0.12f, 0.46f, 0.28f),
+            ThemeOrb(Color(0xFFB3E5FC), 0.85f, 0.85f, 0.50f, 0.30f)
         ),
-        cornerRadius = 16, surfaceAlpha = 0.94f, edgeGlow = true, elevation = 2,
-        glowColor = Color(0xFF2F6BFF)
+        cornerRadius = 24, surfaceAlpha = 0.90f, edgeGlow = true, elevation = 4,
+        glowColor = Color(0xFF2196F3)
     )
 
-    /** designs/glass-* light: Frost Glass — milky panels over pastel sky. */
-    val LIQUID_GLASS_LIGHT = AppThemeSpec(
-        id = "liquid_glass_light",
-        name = "Frost Glass",
-        isDark = false,
-        primary = Color(0xFF2F6BFF), onPrimary = Color.White,
-        secondary = Color(0xFF29C5FF),
-        background = Color(0xFFF2F5FC), onBackground = Color(0xFF1A2745),
-        surface = Color(0xFFFFFFFF), onSurface = Color(0xFF1A2745),
-        surfaceVariant = Color(0xFFE7EDFA), onSurfaceVariant = Color(0xFF4A5878),
-        outline = Color(0xFFBFCDE8),
-        backgroundOrbs = listOf(
-            ThemeOrb(Color(0xFF9DB8FF), 0.15f, 0.12f, 0.45f, 0.40f),
-            ThemeOrb(Color(0xFFC9A8FF), 0.88f, 0.40f, 0.38f, 0.32f),
-            ThemeOrb(Color(0xFF8FE3FF), 0.35f, 0.90f, 0.48f, 0.35f)
-        ),
-        cornerRadius = 24, surfaceAlpha = 0.78f, edgeGlow = true, elevation = 0
+    /** Green-phosphor terminal, monospace everywhere (the mono theme). */
+    val TERMINAL = AppThemeSpec(
+        id = "terminal", name = "Terminal", isDark = true,
+        primary = Color(0xFF00E676), onPrimary = Color(0xFF002812),
+        secondary = Color(0xFF69F0AE),
+        background = Color(0xFF04120A), onBackground = Color(0xFFDCFFE9),
+        surface = Color(0xFF081C12), onSurface = Color(0xFFDCFFE9),
+        surfaceVariant = Color(0xFF0D2A1B), onSurfaceVariant = Color(0xFF6DA287),
+        outline = Color(0xFF0F4025),
+        cornerRadius = 6, surfaceAlpha = 0.92f, edgeGlow = true, elevation = 0,
+        glowColor = Color(0xFF00E676), monoFont = true
     )
 
-    /** designs/lgm-* dark: Material You Glass — charcoal-indigo mesh. */
-    val GLASS_YOU_DARK = AppThemeSpec(
-        id = "glass_you_dark",
-        name = "You Glass Dark",
-        isDark = true,
-        primary = Color(0xFF9FC2FF), onPrimary = Color(0xFF0E2A55),
-        secondary = Color(0xFF6FE0D2),
-        background = Color(0xFF121420), onBackground = Color(0xFFE9EAF4),
-        surface = Color(0xFF1C1F30), onSurface = Color(0xFFE9EAF4),
-        surfaceVariant = Color(0xFF272B42), onSurfaceVariant = Color(0xFFB4B9D6),
-        outline = Color(0xFF434A6E),
-        backgroundOrbs = listOf(
-            ThemeOrb(Color(0xFF5B6BD6), 0.20f, 0.15f, 0.45f, 0.30f),
-            ThemeOrb(Color(0xFF3EB9A9), 0.85f, 0.55f, 0.38f, 0.24f),
-            ThemeOrb(Color(0xFF8A64C9), 0.40f, 0.92f, 0.42f, 0.24f)
-        ),
-        cornerRadius = 28, surfaceAlpha = 0.80f, edgeGlow = true, elevation = 0
-    )
+    // ==================== CATALOG ====================
 
-    /** designs/lgm-* light: Material You Glass — cream-pastel mesh. */
-    val GLASS_YOU_LIGHT = AppThemeSpec(
-        id = "glass_you_light",
-        name = "You Glass Light",
-        isDark = false,
-        primary = Color(0xFF3B5BA9), onPrimary = Color.White,
-        secondary = Color(0xFF2E8C80),
-        background = Color(0xFFFBF8F2), onBackground = Color(0xFF23283D),
-        surface = Color(0xFFFFFFFF), onSurface = Color(0xFF23283D),
-        surfaceVariant = Color(0xFFEFEAF8), onSurfaceVariant = Color(0xFF565D7A),
-        outline = Color(0xFFCCC6E0),
-        backgroundOrbs = listOf(
-            ThemeOrb(Color(0xFFB9C6F2), 0.18f, 0.14f, 0.45f, 0.45f),
-            ThemeOrb(Color(0xFFA8E3DA), 0.85f, 0.45f, 0.36f, 0.38f),
-            ThemeOrb(Color(0xFFE7C7F2), 0.45f, 0.90f, 0.45f, 0.38f)
-        ),
-        cornerRadius = 28, surfaceAlpha = 0.85f, edgeGlow = true, elevation = 0
-    )
-
-    /** designs/hud-* light: Day Flight — brushed aluminum, navy + amber. */
-    val DAY_FLIGHT = AppThemeSpec(
-        id = "day_flight",
-        name = "Day Flight",
-        isDark = false,
-        primary = Color(0xFF16305A), onPrimary = Color.White,
-        secondary = Color(0xFFE07B00),
-        background = Color(0xFFD8DCE2), onBackground = Color(0xFF16213A),
-        surface = Color(0xFFE9ECF1), onSurface = Color(0xFF16213A),
-        surfaceVariant = Color(0xFFC9CFD9), onSurfaceVariant = Color(0xFF44506B),
-        outline = Color(0xFF9AA5B8),
-        cornerRadius = 8, surfaceAlpha = 1f, edgeGlow = true, elevation = 1,
-        glowColor = Color(0xFFE07B00),
-        connected = Color(0xFF1E7B4F), connecting = Color(0xFFE07B00),
-        monoFont = true
-    )
-
-
-    val CYBERPUNK = AppThemeSpec(
-        id = "cyberpunk", name = "Cyberpunk", isDark = true,
-        primary = Color(0xFFFCEE0A), onPrimary = Color.Black,
-        secondary = Color(0xFF00F0FF),
-        background = Color(0xFF0D0221), onBackground = Color(0xFFF3E9FF),
-        surface = Color(0xFF1A0B38), onSurface = Color(0xFFF3E9FF),
-        surfaceVariant = Color(0xFF261352), onSurfaceVariant = Color(0xFFB79ADB),
-        outline = Color(0xFF4A2A78),
-        backgroundOrbs = listOf(
-            ThemeOrb(Color(0xFFFCEE0A), 0.85f, 0.15f, 0.32f, 0.20f),
-            ThemeOrb(Color(0xFF00F0FF), 0.12f, 0.80f, 0.40f, 0.22f),
-            ThemeOrb(Color(0xFFFF2D95), 0.55f, 0.45f, 0.35f, 0.15f)
-        ),
-        cornerRadius = 10, surfaceAlpha = 0.90f, edgeGlow = true,
-        elevation = 0, glowColor = Color(0xFFFCEE0A)
-    )
-
-    val CHROME = AppThemeSpec(
-        id = "chrome", name = "Chrome Metal", isDark = false,
-        primary = Color(0xFF37474F), onPrimary = Color.White,
-        secondary = Color(0xFF00838F),
-        background = Color(0xFFE8EBEE), onBackground = Color(0xFF20262B),
-        surface = Color(0xFFF6F8FA), onSurface = Color(0xFF20262B),
-        surfaceVariant = Color(0xFFD5DBe1), onSurfaceVariant = Color(0xFF4A555E),
-        outline = Color(0xFFAAB4BD),
-        cornerRadius = 12, elevation = 3, edgeGlow = true
-    )
-
-    val SYNTHWAVE = AppThemeSpec(
-        id = "synthwave", name = "Synthwave", isDark = true,
-        primary = Color(0xFFFF6EC7), onPrimary = Color.Black,
-        secondary = Color(0xFF7DF9FF),
-        background = Color(0xFF16003B), onBackground = Color(0xFFFFE3F8),
-        surface = Color(0xFF260A52), onSurface = Color(0xFFFFE3F8),
-        surfaceVariant = Color(0xFF351570), onSurfaceVariant = Color(0xFFC9A8E8),
-        outline = Color(0xFF5A2D96),
-        backgroundOrbs = listOf(
-            ThemeOrb(Color(0xFFFF6EC7), 0.50f, 0.85f, 0.55f, 0.28f),
-            ThemeOrb(Color(0xFF7DF9FF), 0.85f, 0.15f, 0.35f, 0.20f)
-        ),
-        cornerRadius = 18, surfaceAlpha = 0.88f, edgeGlow = true,
-        elevation = 0, glowColor = Color(0xFFFF6EC7)
-    )
-
-    val GALAXY = AppThemeSpec(
-        id = "galaxy", name = "Galaxy", isDark = true,
-        primary = Color(0xFF9F7BFF), onPrimary = Color.White,
-        secondary = Color(0xFF4DD0E1),
-        background = Color(0xFF060312), onBackground = Color(0xFFEDE7FF),
-        surface = Color(0xFF150E2E), onSurface = Color(0xFFEDE7FF),
-        surfaceVariant = Color(0xFF201646), onSurfaceVariant = Color(0xFFAF9FD6),
-        outline = Color(0xFF3D2E6E),
-        backgroundOrbs = listOf(
-            ThemeOrb(Color(0xFF6A3DE8), 0.20f, 0.20f, 0.45f, 0.30f),
-            ThemeOrb(Color(0xFF4DD0E1), 0.80f, 0.60f, 0.30f, 0.20f),
-            ThemeOrb(Color(0xFFE91E63), 0.45f, 0.90f, 0.35f, 0.15f)
-        ),
-        cornerRadius = 22, surfaceAlpha = 0.82f, edgeGlow = true, elevation = 0
-    )
-
-    val TACTICAL = AppThemeSpec(
-        id = "tactical", name = "Tactical", isDark = true,
-        primary = Color(0xFF8BC34A), onPrimary = Color.Black,
-        secondary = Color(0xFFCDDC39),
-        background = Color(0xFF14180F), onBackground = Color(0xFFE2E8D5),
-        surface = Color(0xFF1E2417), onSurface = Color(0xFFE2E8D5),
-        surfaceVariant = Color(0xFF2A331F), onSurfaceVariant = Color(0xFF9AA88A),
-        outline = Color(0xFF44523A),
-        cornerRadius = 6, elevation = 1, edgeGlow = true, monoFont = true,
-        glowColor = Color(0xFF8BC34A)
-    )
-
-    val PASTEL = AppThemeSpec(
-        id = "pastel", name = "Pastel Soft", isDark = false,
-        // SECTION 4 accessibility fix: white on pastel blue was 2.6:1.
-        primary = Color(0xFF7C9EF5), onPrimary = Color(0xFF1B2B52),
-        secondary = Color(0xFFF5A9C4),
-        background = Color(0xFFFDF7FA), onBackground = Color(0xFF3A3A4A),
-        surface = Color(0xFFFFFFFF), onSurface = Color(0xFF3A3A4A),
-        surfaceVariant = Color(0xFFF3E9F2), onSurfaceVariant = Color(0xFF77778A),
-        outline = Color(0xFFD9CBE0),
-        backgroundOrbs = listOf(
-            ThemeOrb(Color(0xFFBFD4FF), 0.20f, 0.15f, 0.45f, 0.40f),
-            ThemeOrb(Color(0xFFFFD6E8), 0.85f, 0.50f, 0.38f, 0.38f),
-            ThemeOrb(Color(0xFFD9F7E8), 0.40f, 0.90f, 0.42f, 0.35f)
-        ),
-        cornerRadius = 26, surfaceAlpha = 0.90f, edgeGlow = true, elevation = 0
-    )
-
-    /** All themes, gallery order. */
+    /** All themes, gallery order: flagships first, then by family. */
     val ALL: List<AppThemeSpec> = listOf(
         OBSIDIAN_3D, STITCH_GLASS_LIGHT,
-        AERO_GLASS,
-        PILOT_DARK, PILOT_GLOW,
-        LIQUID_GLASS, LIQUID_GLASS_LIGHT,
-        GLASS_YOU_DARK, GLASS_YOU_LIGHT,
-        HAWAII_NIGHT, HAWAII_DAY,
-        COCKPIT_HUD, DAY_FLIGHT,
-        DARK_NEON, OLED_BLACK, MINIMAL_LIGHT,
-        CYBERPUNK, SYNTHWAVE, GALAXY, TACTICAL, CHROME, PASTEL
+        LIQUID_DARK, LIQUID_AQUA,
+        SMOKE_GLASS, FROST_3D,
+        CLAY_3D, AURORA_3D,
+        MATERIAL_YOU_DARK, MATERIAL_YOU_LIGHT,
+        PIXEL_NIGHT, PIXEL_SNOW,
+        AMOLED_VOID, SUNSET_LIQUID,
+        CYBER_NEON, TERMINAL
     )
 
-    /** Safe lookup with default fallback. */
+    /** Safe lookup — unknown/legacy ids land on the flagship default. */
     fun byId(id: String?): AppThemeSpec =
-        ALL.firstOrNull { it.id == id } ?: PILOT_DARK
+        ALL.firstOrNull { it.id == id } ?: OBSIDIAN_3D
 
     /**
      * Dark/light counterpart within the same design family, used when the
      * user forces LIGHT or DARK mode while a theme of the other brightness
-     * is selected (Hawaii Night <-> Hawaii Day, Liquid Glass <-> Frost
-     * Glass, Cockpit HUD <-> Day Flight, ...).
+     * is active. Every theme has a defined partner.
      */
     fun counterpart(spec: AppThemeSpec): AppThemeSpec = when (spec.id) {
-        // STITCH v3 pair — Obsidian 3D <-> Glass Light are one family.
         "obsidian_3d" -> STITCH_GLASS_LIGHT
         "stitch_glass_light" -> OBSIDIAN_3D
-        "aero_glass" -> MINIMAL_LIGHT
-        "pilot_dark", "pilot_glow", "oled_black", "dark_neon" -> MINIMAL_LIGHT
-        "liquid_glass" -> LIQUID_GLASS_LIGHT
-        "liquid_glass_light" -> LIQUID_GLASS
-        "glass_you_dark" -> GLASS_YOU_LIGHT
-        "glass_you_light" -> GLASS_YOU_DARK
-        "hawaii_night" -> HAWAII_DAY
-        "hawaii_day" -> HAWAII_NIGHT
-        "cockpit_hud" -> DAY_FLIGHT
-        "day_flight" -> COCKPIT_HUD
-        "minimal_light" -> PILOT_DARK
-        else -> if (spec.isDark) MINIMAL_LIGHT else PILOT_DARK
+        "liquid_dark" -> LIQUID_AQUA
+        "liquid_aqua" -> LIQUID_DARK
+        "smoke_glass" -> FROST_3D
+        "frost_3d" -> SMOKE_GLASS
+        "clay_3d" -> OBSIDIAN_3D
+        "aurora_3d" -> LIQUID_AQUA
+        "material_you_dark" -> MATERIAL_YOU_LIGHT
+        "material_you_light" -> MATERIAL_YOU_DARK
+        "pixel_night" -> PIXEL_SNOW
+        "pixel_snow" -> PIXEL_NIGHT
+        "amoled_void" -> STITCH_GLASS_LIGHT
+        "sunset_liquid" -> LIQUID_AQUA
+        "cyber_neon" -> STITCH_GLASS_LIGHT
+        "terminal" -> PIXEL_SNOW
+        else -> if (spec.isDark) STITCH_GLASS_LIGHT else OBSIDIAN_3D
     }
 }
