@@ -40,9 +40,9 @@ data class AppSettings(
     /** Auto theme scheduling: switch by time of day. */
     val autoThemeEnabled: Boolean = false,
     /** Theme id used during the day window. */
-    val autoDayTheme: String = "minimal_light",
+    val autoDayTheme: String = "stitch_glass_light",
     /** Theme id used during the night window. */
-    val autoNightTheme: String = "pilot_dark",
+    val autoNightTheme: String = "obsidian_3d",
     /** Night window start hour 0..23 (default 19:00). */
     val autoNightStart: Int = 19,
     /** Night window end hour 0..23 (default 07:00). */
