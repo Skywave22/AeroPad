@@ -2,19 +2,20 @@ package com.bluepilot.remote.theme
 
 import com.bluepilot.remote.ui.theme.BuiltInThemes
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Section 1 contract: theme catalog integrity.
+ * THEME CATALOG v3 contract: catalog integrity.
  * A broken/missing theme id must NEVER crash the app — byId always
- * resolves to a valid spec.
+ * resolves to a valid spec (the flagship default).
  */
 class BuiltInThemesTest {
 
     @Test
-    fun `catalog has all thirteen design themes`() {
-        assertTrue(BuiltInThemes.ALL.size >= 19)
+    fun `catalog has the sixteen v3 themes`() {
+        assertEquals(16, BuiltInThemes.ALL.size)
     }
 
     @Test
@@ -31,16 +32,38 @@ class BuiltInThemesTest {
     }
 
     @Test
-    fun `byId falls back safely on unknown or null id`() {
-        assertEquals(BuiltInThemes.PILOT_DARK, BuiltInThemes.byId("does_not_exist"))
-        assertEquals(BuiltInThemes.PILOT_DARK, BuiltInThemes.byId(null))
-        assertEquals(BuiltInThemes.PILOT_DARK, BuiltInThemes.byId(""))
+    fun `byId falls back safely on unknown legacy or null id`() {
+        assertEquals(BuiltInThemes.OBSIDIAN_3D, BuiltInThemes.byId("does_not_exist"))
+        assertEquals(BuiltInThemes.OBSIDIAN_3D, BuiltInThemes.byId(null))
+        assertEquals(BuiltInThemes.OBSIDIAN_3D, BuiltInThemes.byId(""))
+        // Legacy v2 ids (removed) must also fall back, never crash.
+        listOf(
+            "pilot_dark", "aero_glass", "hawaii_night", "cockpit_hud",
+            "oled_black", "minimal_light", "liquid_glass", "cyberpunk"
+        ).forEach { legacy ->
+            assertEquals(BuiltInThemes.OBSIDIAN_3D, BuiltInThemes.byId(legacy))
+        }
     }
 
     @Test
     fun `catalog contains both dark and light themes`() {
-        assertTrue(BuiltInThemes.ALL.any { it.isDark })
-        assertTrue(BuiltInThemes.ALL.any { !it.isDark })
+        assertTrue(BuiltInThemes.ALL.count { it.isDark } >= 6)
+        assertTrue(BuiltInThemes.ALL.count { !it.isDark } >= 5)
+    }
+
+    @Test
+    fun `every theme has a counterpart of the opposite brightness`() {
+        BuiltInThemes.ALL.forEach { spec ->
+            val other = BuiltInThemes.counterpart(spec)
+            assertNotEquals("${spec.id} counterpart is itself", spec.id, other.id)
+            assertNotEquals(
+                "${spec.id} counterpart same brightness", spec.isDark, other.isDark
+            )
+            assertTrue(
+                "${spec.id} counterpart not in catalog",
+                BuiltInThemes.ALL.any { it.id == other.id }
+            )
+        }
     }
 
     @Test
@@ -57,15 +80,22 @@ class BuiltInThemesTest {
     }
 
     @Test
-    fun `design themes are present`() {
+    fun `v3 family themes are present`() {
         val ids = BuiltInThemes.ALL.map { it.id }
         assertTrue(ids.containsAll(listOf(
-            "pilot_dark", "pilot_glow",
-            "liquid_glass", "liquid_glass_light",
-            "glass_you_dark", "glass_you_light",
-            "hawaii_night", "hawaii_day",
-            "cockpit_hud", "day_flight",
-            "dark_neon", "oled_black", "minimal_light"
+            "obsidian_3d", "stitch_glass_light",         // flagships
+            "liquid_dark", "liquid_aqua",                // liquid
+            "smoke_glass", "frost_3d",                   // glass
+            "material_you_dark", "material_you_light",   // material
+            "pixel_night", "pixel_snow",                 // pixel experience
+            "amoled_void", "aurora_3d", "sunset_liquid",
+            "cyber_neon", "clay_3d", "terminal"          // extras
         )))
+    }
+
+    @Test
+    fun `exactly one mono font theme`() {
+        assertEquals(1, BuiltInThemes.ALL.count { it.monoFont })
+        assertTrue(BuiltInThemes.TERMINAL.monoFont)
     }
 }
