@@ -101,10 +101,15 @@ import timber.log.Timber
 @Composable
 fun GamepadBuilderScreen(
     onBack: () -> Unit,
+    /** GTA presets — non-null jumps straight into PLAY mode for that preset. */
+    presetKey: String? = null,
     viewModel: GamepadBuilderViewModel = hiltViewModel()
 ) {
     val playing by viewModel.playing.collectAsState()
     val draft by viewModel.draft.collectAsState()
+
+    // Auto-play the requested preset once (recomposition-safe).
+    LaunchedEffect(presetKey) { presetKey?.let { viewModel.playPreset(it) } }
 
     when {
         playing != null -> GamepadPlayer(viewModel)

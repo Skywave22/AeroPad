@@ -301,6 +301,10 @@ class GamepadBuilderViewModel @Inject constructor(
 
     companion object {
         private const val UNDO_LIMIT = 20
+
+        /** GTA preset route keys (Gamepad ⋮ menu → builder player). */
+        const val PRESET_GTA_COMFORT = "gta_comfort"
+        const val PRESET_GTA_OBSIDIAN = "gta_obsidian"
     }
 
     val profiles: StateFlow<List<GamepadProfile>> = repository.observeAll()
@@ -366,6 +370,23 @@ class GamepadBuilderViewModel @Inject constructor(
     // ------------------------------------------------------------------
     // Profile list actions
     // ------------------------------------------------------------------
+
+    /**
+     * GTA presets — play a seeded preset by its route key (Gamepad ⋮ menu).
+     * Seeds first so the preset exists even on a fresh install, then plays
+     * through the normal pipeline (all esports/assist features included).
+     */
+    fun playPreset(key: String) {
+        val name = when (key) {
+            PRESET_GTA_COMFORT -> GamepadProfileRepository.GTA_COMFORT_NAME
+            PRESET_GTA_OBSIDIAN -> GamepadProfileRepository.GTA_OBSIDIAN_NAME
+            else -> return
+        }
+        viewModelScope.launch {
+            repository.seedIfEmpty()
+            repository.idByName(name)?.let { play(it) }
+        }
+    }
 
     fun play(id: Long) {
         viewModelScope.launch {

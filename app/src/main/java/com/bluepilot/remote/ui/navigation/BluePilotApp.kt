@@ -82,6 +82,8 @@ object Routes {
     const val MACROS = "macros"
     const val THEMES = "themes"
     const val GAMEPAD_BUILDER = "gamepad_builder"
+    /** GTA presets — builder in instant-play mode for a seeded preset. */
+    const val GAMEPAD_PRESET = "gamepad_preset"
     const val FULL_KEYBOARD = "full_keyboard"
     const val PC_COMBO = "pc_combo"
     const val AIR_MOUSE = "air_mouse"
@@ -208,7 +210,8 @@ fun BluePilotApp(
         composable(Routes.GAMEPAD) {
             GamepadScreen(
                 onBack = { navController.popBackStack() },
-                onOpenBuilder = { navController.navigate(Routes.GAMEPAD_BUILDER) }
+                onOpenBuilder = { navController.navigate(Routes.GAMEPAD_BUILDER) },
+                onOpenPreset = { key -> navController.navigate("${Routes.GAMEPAD_PRESET}/$key") }
             )
         }
         composable(Routes.WIFI_CONNECT) {
@@ -227,6 +230,15 @@ fun BluePilotApp(
         composable(Routes.MACROS) { MacrosScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.THEMES) { ThemeGalleryScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.GAMEPAD_BUILDER) { GamepadBuilderScreen(onBack = { navController.popBackStack() }) }
+        composable(
+            route = "${Routes.GAMEPAD_PRESET}/{presetKey}",
+            arguments = listOf(navArgument("presetKey") { type = NavType.StringType })
+        ) { entry ->
+            GamepadBuilderScreen(
+                onBack = { navController.popBackStack() },
+                presetKey = entry.arguments?.getString("presetKey")
+            )
+        }
         composable(Routes.FULL_KEYBOARD) { FullKeyboardScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.PC_COMBO) { PcComboScreen(onBack = { navController.popBackStack() }) }
         composable(Routes.AIR_MOUSE) { AirMouseScreen(onBack = { navController.popBackStack() }) }
