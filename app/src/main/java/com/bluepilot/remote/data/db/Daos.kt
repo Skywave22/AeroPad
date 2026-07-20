@@ -75,4 +75,8 @@ interface GamepadProfileDao {
 
     @Query("SELECT COUNT(*) FROM gamepad_profiles")
     suspend fun count(): Int
+
+    /** GTA presets — seed check + play-by-name lookup for non-empty DBs. */
+    @Query("SELECT * FROM gamepad_profiles WHERE name = :name LIMIT 1")
+    suspend fun byName(name: String): GamepadProfileEntity?
 }
