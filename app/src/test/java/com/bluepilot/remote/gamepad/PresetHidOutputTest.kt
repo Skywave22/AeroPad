@@ -30,6 +30,41 @@ class PresetHidOutputTest {
     }
 
     @Test
+    fun `gta presets carry the real GTA V xbox mapping`() {
+        listOf(repo.gtaComfortLayout(), repo.gtaObsidianLayout()).forEach { spec ->
+            val byIndex = spec.controls
+                .filter { it.type == GamepadControlType.BUTTON || it.type == GamepadControlType.TRIGGER }
+                .associateBy { it.buttonIndex }
+            // A=0 sprint, B=1 attack, X=2 jump, Y=3 vehicle,
+            // LB=4 cover, RB=5 radio, LT=6 aim, RT=7 shoot.
+            listOf(0, 1, 2, 3, 4, 5, 6, 7).forEach { idx ->
+                assertTrue("$idx missing in ${spec.name}", byIndex.containsKey(idx))
+            }
+            // Movement stick + all 8 actions pressable → distinct HID bits.
+            assertTrue(spec.controls.any { it.type == GamepadControlType.STICK })
+            var st = GamepadSnapshot()
+            (0..7).forEach { st = GamepadRuntimeCore.withButton(st, it, true) }
+            assertEquals(8, Integer.bitCount(st.buttons))
+            assertEquals(7, HidReportBuilder.gamepad(st).size)
+        }
+    }
+
+    @Test
+    fun `gta presets sanitize without dropping controls`() {
+        listOf(repo.gtaComfortLayout(), repo.gtaObsidianLayout()).forEach { spec ->
+            val clean = spec.sanitized()
+            assertEquals(spec.name, clean.name)
+            assertEquals(spec.controls.size, clean.controls.size)
+            clean.controls.forEach { c ->
+                val f = c.frame
+                assertTrue(f.x >= 0f && f.x + f.w <= 1.0001f)
+                assertTrue(f.y >= 0f && f.y + f.h <= 1.0001f)
+                assertTrue(c.buttonIndex in 0..15)
+            }
+        }
+    }
+
+    @Test
     fun `all four presets sanitize cleanly and stay in bounds`() {
         listOf(repo.fpsLayout(), repo.racingLayout(), repo.fightingLayout(), repo.casualLayout()).forEach { spec ->
             val clean = spec.sanitized()
@@ -50,4 +85,5 @@ private class FakeDao : com.bluepilot.remote.data.db.GamepadProfileDao {
     override suspend fun upsert(profile: com.bluepilot.remote.data.db.GamepadProfileEntity) = 1L
     override suspend fun deleteById(id: Long) {}
     override suspend fun count() = 0
+    override suspend fun byName(name: String) = null
 }
